@@ -1,5 +1,5 @@
-class apiError {
-  constructor(success = false, data, message, error = true) {
+class apiResponse {
+  constructor(success = true, data, message, error = false) {
     (this.success = success),
       (this.data = data),
       (this.message = message),
@@ -7,4 +7,4 @@ class apiError {
   }
 }
 
-module.exports = { apiError };
+module.exports = { apiResponse };

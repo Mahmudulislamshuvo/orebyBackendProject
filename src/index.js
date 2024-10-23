@@ -6,9 +6,6 @@ const chalk = require("chalk");
 dbConnect()
   .then(() => {
     console.log(chalk.bgBlue("Database Connection Succesfull"));
-    app.get("/shuvo", (req, res) => {
-      console.log("hi Shuvo");
-    });
 
     const port = process.env.PORT || 4000;
     app.listen(port, () => {

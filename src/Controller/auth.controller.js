@@ -2,6 +2,7 @@ const { apiResponse } = require("../Utils/apiResponse");
 const { apiError } = require("../Utils/apiError");
 const { Mailchecker, PasswordChecker } = require("../Helper/validator.js");
 const userModel = require("../Model/user.model");
+const { makeHashPassword } = require("../Helper/bcrypt.js");
 
 const Registration = async (req, res) => {
   try {
@@ -15,7 +16,7 @@ const Registration = async (req, res) => {
         );
     }
     // Email and pass formate Checker
-    if (Mailchecker(email) || PasswordChecker(password)) {
+    if (!Mailchecker(email) || !PasswordChecker(password)) {
       return res
         .status(401)
         .json(
@@ -28,12 +29,8 @@ const Registration = async (req, res) => {
           )
         );
     }
-    console.log(
-      "from mail checker",
-      Mailchecker(email),
-      "from pass checker",
-      PasswordChecker(password)
-    );
+    // Hash password
+    const HashPass = await makeHashPassword(password);
 
     // save data to database
     const saveUserdata = await new userModel({
@@ -41,7 +38,7 @@ const Registration = async (req, res) => {
       email,
       mobile,
       address1,
-      password,
+      password: HashPass,
     }).save();
     res
       .status(200)

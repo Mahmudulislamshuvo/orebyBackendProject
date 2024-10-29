@@ -1,6 +1,7 @@
 class apiError {
-  constructor(success = false, data, message, error = true) {
+  constructor(success = false, statusCode, data, message, error = true) {
     (this.success = success),
+      (this.statusCode = statusCode),
       (this.data = data),
       (this.message = message),
       (this.error = error);

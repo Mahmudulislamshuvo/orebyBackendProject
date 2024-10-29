@@ -1,4 +1,4 @@
-const mongoose = repuire("mongoose");
+const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
 const UserModel = new Schema(
@@ -10,7 +10,6 @@ const UserModel = new Schema(
     },
     lastName: {
       type: String,
-      required: [true, "Last Name missing !!"],
       trime: true,
     },
     email: {
@@ -19,7 +18,7 @@ const UserModel = new Schema(
       trime: true,
     },
     mobile: {
-      type: Number,
+      type: String,
       required: [true, "Mobile Number missing !!"],
       trime: true,
       max: [11, "max length is 11"],
@@ -36,7 +35,6 @@ const UserModel = new Schema(
     },
     city: {
       type: String,
-      required: [true, "city missing !!"],
       trime: true,
     },
     postCode: {
@@ -45,12 +43,10 @@ const UserModel = new Schema(
     },
     divition: {
       type: String,
-      required: [true, "address1 missing !!"],
       trime: true,
     },
     districk: {
       type: String,
-      required: [true, "address1 missing !!"],
       trime: true,
     },
     password: {
@@ -65,12 +61,10 @@ const UserModel = new Schema(
     },
     otp: {
       type: Number,
-      required: [true, "Password missing !!"],
       trime: true,
     },
     resetOtp: {
       type: Number,
-      required: [true, "Password missing !!"],
       trime: true,
     },
     avatar: {
@@ -86,4 +80,4 @@ const UserModel = new Schema(
   }
 );
 
-module.exports = { UserModel };
+module.exports = mongoose.model("user", UserModel);

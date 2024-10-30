@@ -3,6 +3,8 @@ const { apiError } = require("../Utils/apiError");
 const { Mailchecker, PasswordChecker } = require("../Helper/validator.js");
 const userModel = require("../Model/user.model");
 const { makeHashPassword } = require("../Helper/bcrypt.js");
+const { sendMail } = require("../Helper/nodemailer.js");
+const { numbergenertor } = require("../Helper/numbergen.js");
 
 const Registration = async (req, res) => {
   try {
@@ -31,20 +33,28 @@ const Registration = async (req, res) => {
     }
     // Hash password
     const HashPass = await makeHashPassword(password);
-
+    // otp gen
+    const Otp = await numbergenertor();
+    // send account verification otp mail to user
+    const IsMaiSend = await sendMail(email, Otp);
     // save data to database
-    const saveUserdata = await new userModel({
-      firstName,
-      email,
-      mobile,
-      address1,
-      password: HashPass,
-    }).save();
-    res
-      .status(200)
-      .json(
-        new apiResponse(true, saveUserdata, "data saved to database", false)
-      );
+    if (IsMaiSend) {
+      const saveUserdata = await new userModel({
+        firstName,
+        email,
+        mobile,
+        address1,
+        password: HashPass,
+      }).save();
+      return res
+        .status(201)
+        .json(
+          new apiResponse(true, saveUserdata, "data saved to database", false)
+        );
+    }
+    return res
+      .status(501)
+      .json(new apiError(false, 501, null, "Problem with send mail", true));
   } catch (error) {
     return res
       .status(505)

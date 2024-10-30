@@ -59,7 +59,7 @@ const UserModel = new Schema(
       enum: ["user", "admin", "merchent"],
       default: "user",
     },
-    otp: {
+    Otp: {
       type: Number,
       trime: true,
     },

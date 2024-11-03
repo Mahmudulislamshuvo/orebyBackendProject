@@ -37,7 +37,7 @@ const Registration = async (req, res) => {
     const Otp = await numbergenertor();
     // send account verification otp mail to user
     const IsMaiSend = await sendMail(email, Otp);
-    // save data to database
+    // save data to database with single time otp
     if (IsMaiSend) {
       const saveUserdata = await new userModel({
         firstName,
@@ -45,7 +45,11 @@ const Registration = async (req, res) => {
         mobile,
         address1,
         password: HashPass,
+        Otp: Otp,
       }).save();
+      // otp save to database temporary comment
+      // saveUserdata.Otp = Otp;
+      // saveUserdata.save();
       return res
         .status(201)
         .json(

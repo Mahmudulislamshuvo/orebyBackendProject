@@ -17,6 +17,11 @@ const UserModel = new Schema(
       required: [true, "Email missing !!"],
       trime: true,
     },
+    Recoveryemail: {
+      type: String,
+      default: null,
+      trime: true,
+    },
     mobile: {
       type: String,
       required: [true, "Mobile Number missing !!"],

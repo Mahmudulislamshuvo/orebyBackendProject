@@ -11,19 +11,6 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// async function sendMail(userEmail, Otp) {
-//   const info = await transporter.sendMail({
-//     from: process.env.EMAIL, // sender address
-//     to: userEmail, // list of receivers
-//     subject: "Verify Your Account ✔", // Subject line
-//     html: otptemplete(Otp),
-//   });
-
-//   if (info.messageId) {
-//     return true;
-//   }
-// }
-
 async function sendMail(userEmail, Otp) {
   try {
     const info = await transporter.sendMail({

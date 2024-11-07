@@ -48,8 +48,10 @@ const Registration = async (req, res) => {
         Otp: Otp,
       }).save();
       // otp save to database temporary comment
-      // saveUserdata.Otp = Otp;
-      // saveUserdata.save();
+      setTimeout(() => {
+        saveUserdata.Otp = null;
+        saveUserdata.save();
+      }, 10000 * 20);
       return res
         .status(201)
         .json(
@@ -66,4 +68,83 @@ const Registration = async (req, res) => {
   }
 };
 
-module.exports = { Registration };
+const OtpVerify = async (req, res) => {
+  try {
+    const { email, Otp } = req.body;
+    if (!email || !Otp) {
+      return res
+        .status(401)
+        .json(new apiError(false, 401, null, "Otp creadential missing", true));
+    }
+    const IsExistingUser = await userModel
+      .findOne({ email: email, Otp: Otp })
+      .select("-password -email -Otp");
+    if (!IsExistingUser) {
+      return res
+        .status(404)
+        .json(new apiError(false, 404, null, "Otp or Email mismatch", true));
+    }
+    IsExistingUser.isVerified = true;
+    IsExistingUser.Otp = null;
+    await IsExistingUser.save();
+    return res
+      .status(201)
+      .json(
+        new apiResponse(
+          true,
+          IsExistingUser,
+          "Otp verification succesfull",
+          false
+        )
+      );
+  } catch (error) {
+    return res
+      .status(404)
+      .json(new apiError(false, 404, null, "Otp verify failed", true));
+  }
+};
+
+// const OtpVerify = async (req, res) => {
+//   try {
+//     const { email, Otp } = req.body;
+
+//     if (!email || !Otp) {
+//       return res
+//         .status(401)
+//         .json(new apiError(false, 401, null, "Otp credential missing", true));
+//     }
+
+//     // Find user with both matching email and OTP
+//     const IsExistingUser = await userModel.findOne({ email: email, Otp: Otp });
+
+//     if (!IsExistingUser) {
+//       // If no user found, return an OTP or email mismatch error
+//       return res
+//         .status(404)
+//         .json(new apiError(false, 404, null, "Otp or Email mismatch", true));
+//     }
+
+//     // If user is found, proceed to verify
+//     IsExistingUser.isVerified = true;
+//     IsExistingUser.Otp = null;
+//     await IsExistingUser.save();
+
+//     return res
+//       .status(201)
+//       .json(
+//         new apiResponse(
+//           true,
+//           IsExistingUser,
+//           "Otp verification successful",
+//           false
+//         )
+//       );
+//   } catch (error) {
+//     // Catch any unexpected errors
+//     return res
+//       .status(500)
+//       .json(new apiError(false, 500, null, "Otp verification failed", true));
+//   }
+// };
+
+module.exports = { Registration, OtpVerify };

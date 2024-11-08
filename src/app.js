@@ -3,7 +3,7 @@ const app = express();
 const AllRouter = require("./Routes/index");
 
 // middleware
-app.use(express.json()); //if I set it down of AllRouter it will not gong to work
+app.use(express.json());
 app.use(AllRouter);
 
 module.exports = { app };

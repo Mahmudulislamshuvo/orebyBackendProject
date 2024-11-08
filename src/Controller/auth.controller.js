@@ -2,7 +2,7 @@ const { apiResponse } = require("../Utils/apiResponse");
 const { apiError } = require("../Utils/apiError");
 const { Mailchecker, PasswordChecker } = require("../Helper/validator.js");
 const userModel = require("../Model/user.model");
-const { makeHashPassword } = require("../Helper/bcrypt.js");
+const { makeHashPassword, comparePassword } = require("../Helper/bcrypt.js");
 const { sendMail } = require("../Helper/nodemailer.js");
 const { numbergenertor } = require("../Helper/numbergen.js");
 
@@ -104,47 +104,34 @@ const OtpVerify = async (req, res) => {
   }
 };
 
-// const OtpVerify = async (req, res) => {
-//   try {
-//     const { email, Otp } = req.body;
+const login = async (req, res) => {
+  try {
+    const { emailOrphone, password } = req.body;
+    if (!emailOrphone || !password) {
+      return res
+        .status(404)
+        .json(
+          new apiError(false, 402, null, "Email or Password Missing!!", true)
+        );
+    }
+    // check the user is valid or not
+    const loggedUser = await userModel.findOne({
+      $or: [{ email: emailOrphone }, { mobile: emailOrphone }],
+    });
+    // decript the password
+    const IspassCorrect = await comparePassword(password, loggedUser?.password);
+    console.log(IspassCorrect);
 
-//     if (!email || !Otp) {
-//       return res
-//         .status(401)
-//         .json(new apiError(false, 401, null, "Otp credential missing", true));
-//     }
+    if (!IspassCorrect) {
+      return res
+        .status(404)
+        .json(new apiError(false, 404, null, "Login credential invalid", true));
+    }
+  } catch (error) {
+    return res
+      .status(501)
+      .json(new apiError(false, 501, null, "login failed", true, `${error}`));
+  }
+};
 
-//     // Find user with both matching email and OTP
-//     const IsExistingUser = await userModel.findOne({ email: email, Otp: Otp });
-
-//     if (!IsExistingUser) {
-//       // If no user found, return an OTP or email mismatch error
-//       return res
-//         .status(404)
-//         .json(new apiError(false, 404, null, "Otp or Email mismatch", true));
-//     }
-
-//     // If user is found, proceed to verify
-//     IsExistingUser.isVerified = true;
-//     IsExistingUser.Otp = null;
-//     await IsExistingUser.save();
-
-//     return res
-//       .status(201)
-//       .json(
-//         new apiResponse(
-//           true,
-//           IsExistingUser,
-//           "Otp verification successful",
-//           false
-//         )
-//       );
-//   } catch (error) {
-//     // Catch any unexpected errors
-//     return res
-//       .status(500)
-//       .json(new apiError(false, 500, null, "Otp verification failed", true));
-//   }
-// };
-
-module.exports = { Registration, OtpVerify };
+module.exports = { Registration, OtpVerify, login };

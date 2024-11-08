@@ -8,4 +8,12 @@ const makeHashPassword = async (PlaintextPassword) => {
   }
 };
 
-module.exports = { makeHashPassword };
+const comparePassword = async (PlaintextPassword, hashpass) => {
+  try {
+    return bcrypt.compare(PlaintextPassword, hashpass);
+  } catch (error) {
+    console.log("unable to dehash password", error);
+  }
+};
+
+module.exports = { makeHashPassword, comparePassword };

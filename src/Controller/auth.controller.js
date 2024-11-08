@@ -5,6 +5,8 @@ const userModel = require("../Model/user.model");
 const { makeHashPassword, comparePassword } = require("../Helper/bcrypt.js");
 const { sendMail } = require("../Helper/nodemailer.js");
 const { numbergenertor } = require("../Helper/numbergen.js");
+const { makeJWTToken } = require("../Helper/jwtToken.js");
+const { authGuard } = require("../middleware/authGuard.middle.js");
 
 const Registration = async (req, res) => {
   try {
@@ -120,18 +122,54 @@ const login = async (req, res) => {
     });
     // decript the password
     const IspassCorrect = await comparePassword(password, loggedUser?.password);
-    console.log(IspassCorrect);
 
     if (!IspassCorrect) {
       return res
         .status(404)
         .json(new apiError(false, 404, null, "Login credential invalid", true));
     }
+
+    const TokenPayload = {
+      id: loggedUser._id,
+      email: loggedUser.email,
+    };
+
+    const token = await makeJWTToken(TokenPayload);
+
+    if (token) {
+      return res
+        .status(200)
+        .cookie("token", token, { httpOnly: true, secure: true })
+        .json(
+          new apiResponse(
+            true,
+            {
+              token: token,
+              useremail: loggedUser.email,
+              userName: loggedUser.firstName,
+              userId: loggedUser._id,
+            },
+            "Login seccessfull with token",
+            false
+          )
+        );
+    }
   } catch (error) {
     return res
       .status(501)
-      .json(new apiError(false, 501, null, "login failed", true, `${error}`));
+      .json(new apiError(false, 501, null, `login failed : ${error}`, true));
   }
 };
 
-module.exports = { Registration, OtpVerify, login };
+const logout = async (req, res) => {
+  try {
+  } catch (error) {
+    return res
+      .status(404)
+      .json(
+        new apiError(false, 402, null, `Error from logout: ${error}`, true)
+      );
+  }
+};
+
+module.exports = { Registration, OtpVerify, login, logout };

@@ -163,6 +163,10 @@ const login = async (req, res) => {
 
 const logout = async (req, res) => {
   try {
+    return res
+      .status(201)
+      .clearCookie("token")
+      .json(new apiResponse(true, null, "Logout Successfull", false));
   } catch (error) {
     return res
       .status(404)

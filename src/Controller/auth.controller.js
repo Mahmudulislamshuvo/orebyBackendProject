@@ -259,6 +259,49 @@ const resetPassword = async (req, res) => {
 
 const resetEmail = async (req, res) => {
   try {
+    const { userId } = req.user;
+    const user = await userModel
+      .findOne({ _id: userId })
+      .select("-address1 -Otp -isVerified");
+    const { newEmail, password } = req.body;
+    if (!newEmail || !password) {
+      return res
+        .status(404)
+        .json(
+          new apiError(false, 404, null, "Email or Password missing!!", true)
+        );
+    }
+    // check password
+    const IspasswordValid = await comparePassword(
+      req.body.password,
+      user?.password
+    );
+    if (!IspasswordValid) {
+      return res
+        .status(404)
+        .json(
+          new apiError(
+            false,
+            404,
+            null,
+            "Password wrong for Email chnage",
+            true
+          )
+        );
+    }
+
+    if (user.email === newEmail) {
+      return res
+        .status(404)
+        .json(new apiError(false, 404, null, "This email already exist", true));
+    }
+    if (user) {
+      user.email = newEmail;
+      user.save();
+      return res
+        .status(201)
+        .json(new apiResponse(true, user, "email update Successfull", false));
+    }
   } catch (error) {
     return res
       .status(501)
@@ -305,11 +348,12 @@ const setRecoveryEmail = async (req, res) => {
 
     const recovery = await userModel
       .findOneAndUpdate({ _id: userId })
-      .select("-role -Otp -isVerified -address1");
-
+      .select("-password -role -Otp -isVerified -address1");
+    // checking password from database
+    const findPassword = await userModel.findOne({ _id: userId });
     const IspasswordValid = await comparePassword(
       req.body.password,
-      recovery?.password
+      findPassword?.password
     );
 
     if (!IspasswordValid) {
@@ -327,7 +371,6 @@ const setRecoveryEmail = async (req, res) => {
       await recovery.save();
       return res
         .status(201)
-        .clearCookie("token")
         .json(
           new apiResponse(
             true,

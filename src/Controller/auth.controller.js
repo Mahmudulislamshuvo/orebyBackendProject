@@ -177,7 +177,7 @@ const logout = async (req, res) => {
 
 const resetPassword = async (req, res) => {
   try {
-    // const { emailOrphone, oldPassword, newPassword } = req.body;
+    const { emailOrphone, oldPassword, newPassword } = req.body;
     for (let key in req.body) {
       // console.log(req.body[key]);
       if (!req.body[key]) {
@@ -205,18 +205,43 @@ const resetPassword = async (req, res) => {
         { email: req.body.emailOrphone },
       ],
     });
+
     // check the old password with database
-    console.log(CheckUser);
     const IspasswordValid = await comparePassword(
       req.body.oldPassword,
       CheckUser?.password
     );
 
-    if (!CheckUser || IspasswordValid) {
+    if (!CheckUser || !IspasswordValid) {
       return res
         .status(404)
         .json(new apiError(false, 404, null, `User in not valid`, true));
     }
+    // hash new password and check
+    const hashNewPassword = await makeHashPassword(req.body.newPassword);
+    if (hashNewPassword) {
+      CheckUser.password = hashNewPassword;
+      await CheckUser.save();
+      return res
+        .status(201)
+        .clearCookie("token")
+        .json(
+          new apiResponse(
+            true,
+            {
+              data: {
+                name: CheckUser.firstName,
+                email: CheckUser.email,
+              },
+            },
+            "Password changed Successfull",
+            false
+          )
+        );
+    }
+    return res
+      .status(404)
+      .json(new apiError(false, 404, null, `User invalid`, true));
   } catch (error) {
     return res
       .status(404)
@@ -232,4 +257,112 @@ const resetPassword = async (req, res) => {
   }
 };
 
-module.exports = { Registration, OtpVerify, login, logout, resetPassword };
+const resetEmail = async (req, res) => {
+  try {
+  } catch (error) {
+    return res
+      .status(501)
+      .json(
+        new apiError(
+          false,
+          501,
+          null,
+          `Error from resetEmail controller: ${error}`,
+          true
+        )
+      );
+  }
+};
+
+const setRecoveryEmail = async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const { recoveryEmail, password } = req.body;
+    if (
+      !recoveryEmail ||
+      !password ||
+      !Mailchecker(recoveryEmail) ||
+      !PasswordChecker(password)
+    ) {
+      return res
+        .status(404)
+        .json(
+          new apiError(
+            false,
+            404,
+            null,
+            "Password Or Password format invaid/Email Or Password missing!!",
+            true
+          )
+        );
+    }
+    // const recovery = await userModel.findOneAndUpdate(
+    //   { _id: userId },
+    //   { $set: { recoveryEmail: recoveryEmail } },
+    //   { new: true }
+    // );
+    // check the old password with database
+
+    const recovery = await userModel
+      .findOneAndUpdate({ _id: userId })
+      .select("-role -Otp -isVerified -address1");
+
+    const IspasswordValid = await comparePassword(
+      req.body.password,
+      recovery?.password
+    );
+
+    if (!IspasswordValid) {
+      return res
+        .status(404)
+        .json(new apiError(false, 404, null, "Password wrong", true));
+    }
+    if (recovery.recoveryEmail === recoveryEmail) {
+      return res
+        .status(404)
+        .json(new apiError(false, 404, null, "email already exist", true));
+    }
+    if (recovery) {
+      recovery.recoveryEmail = recoveryEmail;
+      await recovery.save();
+      return res
+        .status(201)
+        .clearCookie("token")
+        .json(
+          new apiResponse(
+            true,
+            recovery,
+            "Recovery email update Successfull",
+            false
+          )
+        );
+    }
+    return res
+      .status(501)
+      .json(
+        new apiError(false, 501, null, `server error User not found`, true)
+      );
+  } catch (error) {
+    return res
+      .status(501)
+      .json(
+        new apiError(
+          false,
+          501,
+          null,
+          `Error from set RecoveryEmail controller: ${error}`,
+          true
+        )
+      );
+  }
+};
+
+module.exports = {
+  Registration,
+  OtpVerify,
+  login,
+  logout,
+  resetPassword,
+  resetEmail,
+  setRecoveryEmail,
+};

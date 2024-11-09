@@ -4,15 +4,21 @@ const { apiError } = require("../Utils/apiError");
 const authGuard = async (req, res, next) => {
   try {
     const { token } = req.cookies;
-    const decoded = await jwt.verify(token, process.env.TOKEN_SECRAT);
 
-    if (decoded) {
-      const user = {
-        userId: decoded.id,
-        useremail: decoded.email,
-      };
-      req.user = user;
-      next();
+    if (token || req.headers.authorization) {
+      const decoded = await jwt.verify(
+        token || req.headers.authorization,
+        process.env.TOKEN_SECRAT
+      );
+
+      if (decoded) {
+        const user = {
+          userId: decoded.id,
+          useremail: decoded.email,
+        };
+        req.user = user;
+        next();
+      }
     } else {
       return res
         .status(404)

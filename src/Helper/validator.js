@@ -9,4 +9,12 @@ const PasswordChecker = (password) => {
   return PassRegex.test(password);
 };
 
-module.exports = { Mailchecker, PasswordChecker };
+const bdNumberChecker = (number) => {
+  const bdMobileRegex = /^(?:\+?88)?01[3-9]\d{8}$/;
+  bdMobileRegex.test(number);
+  console.log(bdMobileRegex);
+
+  return bdNumberChecker;
+};
+
+module.exports = { Mailchecker, PasswordChecker, bdNumberChecker };

@@ -6,7 +6,6 @@ const { makeHashPassword, comparePassword } = require("../Helper/bcrypt.js");
 const { sendMail } = require("../Helper/nodemailer.js");
 const { numbergenertor } = require("../Helper/numbergen.js");
 const { makeJWTToken } = require("../Helper/jwtToken.js");
-const { authGuard } = require("../middleware/authGuard.middle.js");
 
 const Registration = async (req, res) => {
   try {
@@ -176,4 +175,45 @@ const logout = async (req, res) => {
   }
 };
 
-module.exports = { Registration, OtpVerify, login, logout };
+const resetPassword = async (req, res) => {
+  try {
+    const { emailOrphone, oldPassword, newPassword } = req.body;
+    for (let key in req.body) {
+      console.log(req.body[key]);
+      if (!req.body[key]) {
+        return res
+          .status(404)
+          .json(
+            new apiError(
+              false,
+              402,
+              null,
+              `Email/Password creadential missisng!!: ${key}`,
+              true
+            )
+          );
+      }
+      if (!PasswordChecker(req.body.newPassword)) {
+        return res
+          .status(404)
+          .json(
+            new apiError(false, 402, null, `Password formate invalid`, true)
+          );
+      }
+    }
+  } catch (error) {
+    return res
+      .status(404)
+      .json(
+        new apiError(
+          false,
+          402,
+          null,
+          `Error from resetPass controller: ${error}`,
+          true
+        )
+      );
+  }
+};
+
+module.exports = { Registration, OtpVerify, login, logout, resetPassword };

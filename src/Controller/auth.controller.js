@@ -177,9 +177,9 @@ const logout = async (req, res) => {
 
 const resetPassword = async (req, res) => {
   try {
-    const { emailOrphone, oldPassword, newPassword } = req.body;
+    // const { emailOrphone, oldPassword, newPassword } = req.body;
     for (let key in req.body) {
-      console.log(req.body[key]);
+      // console.log(req.body[key]);
       if (!req.body[key]) {
         return res
           .status(404)
@@ -188,18 +188,34 @@ const resetPassword = async (req, res) => {
               false,
               402,
               null,
-              `Email/Password creadential missisng!!: ${key}`,
+              `Email/Password creadential missisng: ${key}`,
               true
             )
           );
       }
-      if (!PasswordChecker(req.body.newPassword)) {
-        return res
-          .status(404)
-          .json(
-            new apiError(false, 402, null, `Password formate invalid`, true)
-          );
-      }
+    }
+    if (!PasswordChecker(req.body.newPassword)) {
+      return res
+        .status(404)
+        .json(new apiError(false, 402, null, `Password formate invalid`, true));
+    }
+    const CheckUser = await userModel.findOne({
+      $or: [
+        { mobile: req.body.emailOrphone },
+        { email: req.body.emailOrphone },
+      ],
+    });
+    // check the old password with database
+    console.log(CheckUser);
+    const IspasswordValid = await comparePassword(
+      req.body.oldPassword,
+      CheckUser?.password
+    );
+
+    if (!CheckUser || IspasswordValid) {
+      return res
+        .status(404)
+        .json(new apiError(false, 404, null, `User in not valid`, true));
     }
   } catch (error) {
     return res

@@ -222,22 +222,19 @@ const resetPassword = async (req, res) => {
     if (hashNewPassword) {
       CheckUser.password = hashNewPassword;
       await CheckUser.save();
-      return res
-        .status(201)
-        .clearCookie("token")
-        .json(
-          new apiResponse(
-            true,
-            {
-              data: {
-                name: CheckUser.firstName,
-                email: CheckUser.email,
-              },
+      return res.status(201).json(
+        new apiResponse(
+          true,
+          {
+            data: {
+              name: CheckUser.firstName,
+              email: CheckUser.email,
             },
-            "Password changed Successfull",
-            false
-          )
-        );
+          },
+          "Password changed Successfull",
+          false
+        )
+      );
     }
     return res
       .status(404)

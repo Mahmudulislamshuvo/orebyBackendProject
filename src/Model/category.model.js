@@ -16,4 +16,10 @@ const categoryModel = new Schema({
     type: Schema.Types.ObjectId,
     hef: "subcategory",
   },
+  isActive: {
+    type: Boolean,
+    default: false,
+  },
 });
+
+module.exports = mongoose.model("category", categoryModel);

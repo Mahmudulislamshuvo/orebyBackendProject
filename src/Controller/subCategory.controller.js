@@ -49,4 +49,138 @@ const subCategory = async (req, res) => {
   }
 };
 
-module.exports = { subCategory };
+const getAllsubCategory = async (req, res) => {
+  try {
+    const allSubCategory = await subCategoryModel.find().populate("category");
+    if (allSubCategory) {
+      return res
+        .status(201)
+        .json(
+          new apiResponse(
+            allSubCategory,
+            `All subCategory retrive successfully`
+          )
+        );
+    }
+  } catch (error) {
+    return res
+      .status(501)
+      .json(
+        new apiError(
+          501,
+          null,
+          `Error from getAllsubCategory controller: ${error}`
+        )
+      );
+  }
+};
+
+const SingleSubCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const singleSubCategory = await subCategoryModel
+      .findById(id)
+      .populate("category");
+    if (singleSubCategory) {
+      return res
+        .status(201)
+        .json(
+          new apiResponse(
+            singleSubCategory,
+            `Single subCategory retrive successfully`
+          )
+        );
+    }
+    return res
+      .status(401)
+      .json(new apiError(402, null, `Single SubCategory not found!!`));
+  } catch (error) {
+    return res
+      .status(501)
+      .json(
+        new apiError(
+          501,
+          null,
+          `Error from Single SubCategory controller: ${error}`
+        )
+      );
+  }
+};
+
+const DeteleSingleSubCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedItem = await subCategoryModel
+      .findByIdAndDelete({ _id: id })
+      .select("-category -product");
+    if (deletedItem) {
+      return res
+        .status(201)
+        .json(
+          new apiResponse(
+            deletedItem,
+            `Single subCategory ${deletedItem.name} deleted successfully`
+          )
+        );
+    }
+    return res
+      .status(401)
+      .json(
+        new apiError(402, null, `Single Subcategory not found for delete!!`)
+      );
+  } catch (error) {
+    return res
+      .status(501)
+      .json(
+        new apiError(
+          501,
+          null,
+          `Error from Delete Single SubCategory controller: ${error}`
+        )
+      );
+  }
+};
+
+const updateSubCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedSubcategory = await subCategoryModel.findByIdAndUpdate(
+      { _id: id },
+      { ...req.body },
+      { new: true }
+    );
+    if (updatedSubcategory) {
+      return res
+        .status(201)
+        .json(
+          new apiResponse(
+            updatedSubcategory,
+            `subCategory updated successfully`
+          )
+        );
+    }
+    return res
+      .status(401)
+      .json(
+        new apiError(402, null, `ubcategory not found for update failed!!`)
+      );
+  } catch (error) {
+    return res
+      .status(501)
+      .json(
+        new apiError(
+          501,
+          null,
+          `Error from update SubCategory controller: ${error}`
+        )
+      );
+  }
+};
+
+module.exports = {
+  subCategory,
+  getAllsubCategory,
+  SingleSubCategory,
+  DeteleSingleSubCategory,
+  updateSubCategory,
+};

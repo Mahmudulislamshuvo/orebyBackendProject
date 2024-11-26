@@ -41,6 +41,12 @@ const productModel = new Schema({
     type: Schema.Types.ObjectId,
     ref: "subcategory",
   },
+  image: [
+    {
+      type: String,
+      required: true,
+    },
+  ],
 });
 
 module.exports = mongoose.model("product", productModel);

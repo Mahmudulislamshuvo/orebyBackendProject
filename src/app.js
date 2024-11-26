@@ -6,6 +6,7 @@ const cookieParser = require("cookie-parser");
 // middleware
 app.use(cookieParser());
 app.use(express.json());
+app.use(express.static("Public/temp"));
 app.use(AllRouter);
 
 module.exports = { app };

@@ -36,10 +36,12 @@ const productModel = new Schema({
   category: {
     type: Schema.Types.ObjectId,
     ref: "category",
+    required: true,
   },
   subCategory: {
     type: Schema.Types.ObjectId,
     ref: "subcategory",
+    required: true,
   },
   image: [
     {

@@ -103,4 +103,22 @@ const getAllproducts = async (req, res) => {
   }
 };
 
-module.exports = { createProduct, getAllproducts };
+// update product name or details
+
+const updateProduct = async (req, res) => {
+  try {
+    console.log("Hi shuvo this controller is working");
+  } catch (error) {
+    return res
+      .status(501)
+      .json(
+        new apiError(
+          501,
+          null,
+          `update product failed!! Error from updateProduct controller: ${error}`
+        )
+      );
+  }
+};
+
+module.exports = { createProduct, getAllproducts, updateProduct };

@@ -9,7 +9,11 @@ const { upload } = require("../../middleware/multer.middleware");
 
 _.route("/product")
   .post(upload.fields([{ name: "image", maxCount: 5 }]), createProduct)
-  .get(getAllproducts)
-  .patch(updateProduct);
+  .get(getAllproducts);
+
+_.route("/product/:productId").put(
+  upload.fields([{ name: "image", maxCount: 5 }]),
+  updateProduct
+);
 
 module.exports = _;

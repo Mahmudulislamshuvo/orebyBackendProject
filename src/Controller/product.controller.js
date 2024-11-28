@@ -4,6 +4,10 @@ const { apiError } = require("../Utils/apiError");
 const { StaticFileGenerator } = require("../Helper/staticFileGenerator");
 const NodeCache = require("node-cache");
 const myCache = new NodeCache();
+const {
+  uploadCloudinaryFile,
+  deleteCloudinaryFile,
+} = require("../Utils/cloudinary");
 
 // create products
 const createProduct = async (req, res) => {
@@ -22,6 +26,12 @@ const createProduct = async (req, res) => {
     }
 
     const allImage = req.files?.image;
+    let allUploadImg = [];
+    for (let image of allImage) {
+      let UploadedFile = await uploadCloudinaryFile(image?.path);
+      allUploadImg.push(UploadedFile.secure_url);
+    }
+
     const allImageWithDomain = StaticFileGenerator(allImage);
     const alreadyExistproduct = await productModel.find({
       name: name,
@@ -35,7 +45,7 @@ const createProduct = async (req, res) => {
       name,
       description,
       price,
-      image: allImageWithDomain,
+      image: allUploadImg,
       category,
       subCategory,
     }).save();
@@ -107,7 +117,45 @@ const getAllproducts = async (req, res) => {
 
 const updateProduct = async (req, res) => {
   try {
-    console.log("Hi shuvo this controller is working");
+    // update product=========
+    const { productId } = req.params;
+    const IsExistProduct = await productModel.findById(productId);
+    if (!IsExistProduct) {
+      return res
+        .status(404)
+        .json(new apiError(404, null, `product not found!!`));
+    }
+    // update img===
+    let delete_resourcesCloudinary = null;
+    let allUploadImg = [];
+    if (req.files?.image) {
+      for (image of IsExistProduct.image) {
+        const splitImageAdress = image.split("/");
+        const cloudinaryFilePath =
+          splitImageAdress[splitImageAdress.length - 1].split(".")[0];
+        delete_resourcesCloudinary =
+          await deleteCloudinaryFile(cloudinaryFilePath);
+      }
+
+      if (delete_resourcesCloudinary) {
+        for (let image of req.files?.image) {
+          let UploadedFile = await uploadCloudinaryFile(image?.path);
+          allUploadImg.push(UploadedFile.secure_url);
+        }
+        const updatedProduct = await productModel.findByIdAndUpdate(
+          {
+            _id: productId,
+          },
+          { ...req.body },
+          { new: true }
+        );
+        return res
+          .status(201)
+          .json(new apiResponse(updatedProduct, `updated Product succusfully`));
+      }
+    }
+
+    // console.log(updatedProduct);
   } catch (error) {
     return res
       .status(501)

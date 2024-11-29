@@ -169,4 +169,25 @@ const updateProduct = async (req, res) => {
   }
 };
 
-module.exports = { createProduct, getAllproducts, updateProduct };
+const getSingleProduct = async (req, res) => {
+  try {
+    console.log("it's working");
+  } catch (error) {
+    return res
+      .status(501)
+      .json(
+        new apiError(
+          501,
+          null,
+          `Retrive Single Product failed!! Error from GetSingleProduct controller: ${error}`
+        )
+      );
+  }
+};
+
+module.exports = {
+  createProduct,
+  getAllproducts,
+  updateProduct,
+  getSingleProduct,
+};

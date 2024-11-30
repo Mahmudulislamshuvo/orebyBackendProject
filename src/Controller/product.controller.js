@@ -114,7 +114,6 @@ const getAllproducts = async (req, res) => {
 };
 
 // update product name or details
-
 const updateProduct = async (req, res) => {
   try {
     // update product=========
@@ -168,10 +167,26 @@ const updateProduct = async (req, res) => {
       );
   }
 };
-
+// get single product
 const getSingleProduct = async (req, res) => {
   try {
-    console.log("it's working");
+    const { productId } = req.params;
+    const SingleProduct = await productModel
+      .findById(productId)
+      .populate(["category", "subCategory"])
+      .lean();
+    console.log(SingleProduct);
+
+    if (SingleProduct) {
+      return res
+        .status(201)
+        .json(
+          new apiResponse(SingleProduct, `Single product retrive successfull`)
+        );
+    }
+    return res
+      .status(401)
+      .json(new apiError(401, null, `Single Product not found!!`));
   } catch (error) {
     return res
       .status(501)
@@ -185,9 +200,39 @@ const getSingleProduct = async (req, res) => {
   }
 };
 
+const deleteSingleProduct = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const deletedItem = await productModel.findByIdAndDelete({
+      _id: productId,
+    });
+    if (deletedItem) {
+      return res
+        .status(201)
+        .json(
+          new apiResponse(deletedItem, `Single product deleted successfull`)
+        );
+    }
+    return res
+      .status(401)
+      .json(new apiError(401, null, `Single Product not found for delete!!`));
+  } catch (error) {
+    return res
+      .status(501)
+      .json(
+        new apiError(
+          501,
+          null,
+          `Delete Single Product failed!! Error from Delete_Single_Product controller: ${error}`
+        )
+      );
+  }
+};
+
 module.exports = {
   createProduct,
   getAllproducts,
   updateProduct,
   getSingleProduct,
+  deleteSingleProduct,
 };

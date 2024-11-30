@@ -4,6 +4,7 @@ const {
   getAllproducts,
   updateProduct,
   getSingleProduct,
+  deleteSingleProduct,
 } = require("../../Controller/product.controller");
 const _ = express.Router();
 const { upload } = require("../../middleware/multer.middleware");
@@ -14,6 +15,7 @@ _.route("/product")
 
 _.route("/product/:productId")
   .put(upload.fields([{ name: "image", maxCount: 5 }]), updateProduct)
-  .get(getSingleProduct);
+  .get(getSingleProduct)
+  .delete(deleteSingleProduct);
 
 module.exports = _;

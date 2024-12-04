@@ -9,7 +9,6 @@ const bannerSchema = new Schema({
   },
   image: {
     type: String,
-    required: true,
   },
 });
 

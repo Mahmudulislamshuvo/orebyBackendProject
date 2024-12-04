@@ -76,8 +76,9 @@ const getAllproducts = async (req, res) => {
   try {
     const value = myCache.get("allproduct");
     if (value == undefined) {
-      const allProducts = await productModel.find({});
-      //   .populate(["category", "subcategory"]);
+      const allProducts = await productModel
+        .find({})
+        .populate(["category", "subCategory"]);
       myCache.set("allproduct", JSON.stringify(allProducts), 600 * 600);
       if (allProducts) {
         return res

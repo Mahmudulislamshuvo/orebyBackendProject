@@ -62,6 +62,7 @@ const getallBanner = async (req, res) => {
         .json(
           new apiError(504, null, `All banner unable to retrive try again!!`)
         );
+      // check chatgtp
     }
   } catch (error) {
     return res

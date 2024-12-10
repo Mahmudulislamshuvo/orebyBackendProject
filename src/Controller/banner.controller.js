@@ -66,6 +66,9 @@ const getallBanner = async (req, res) => {
       // check chatgtp
       // check chatgtp
       // check chatgtp
+      // check chatgtp
+      // check chatgtp
+      // check chatgtp
     }
   } catch (error) {
     return res

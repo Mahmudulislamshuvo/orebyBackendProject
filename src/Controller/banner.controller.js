@@ -34,6 +34,7 @@ const createBanner = async (req, res) => {
       name,
       image: UploadedIMG.secure_url,
     }).save();
+    myCache.del("allbanner");
     return res
       .status(201)
       .json(new apiResponse(saveBanner, `Banner created succusfully`));
@@ -48,10 +49,10 @@ const createBanner = async (req, res) => {
 
 const getallBanner = async (req, res) => {
   try {
-    const value = myCache.get("allbanner");
-    if (value == undefined) {
-      const allbanner = await bannerModel.find({});
-      myCache.set("allbanner", JSON.stringify(allbanner), 600 * 600);
+    const CacheData = myCache.get("allbanner");
+    if (CacheData == undefined) {
+      const allbanner = await bannerModel.find();
+      myCache.set("allbanner", JSON.stringify(allbanner), 60 * 60);
       if (allbanner) {
         return res
           .status(201)
@@ -62,13 +63,16 @@ const getallBanner = async (req, res) => {
         .json(
           new apiError(504, null, `All banner unable to retrive try again!!`)
         );
-      // check chatgtp
-      // check chatgtp
-      // check chatgtp
-      // check chatgtp
-      // check chatgtp
-      // check chatgtp
-      // check chatgtp
+    } else {
+      const parsedCacheData = JSON.parse(CacheData);
+      return res
+        .status(201)
+        .json(
+          new apiResponse(
+            parsedCacheData,
+            `All Banner retrive succusfully from cache`
+          )
+        );
     }
   } catch (error) {
     return res

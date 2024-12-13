@@ -83,4 +83,67 @@ const getallBanner = async (req, res) => {
   }
 };
 
-module.exports = { createBanner, getallBanner };
+const getSinglebanner = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const SingleBanner = await bannerModel.findById(id);
+    if (!SingleBanner) {
+      return res
+        .status(404)
+        .json(new apiError(404, null, `single banner not found`));
+    }
+    return res
+      .status(201)
+      .json(new apiResponse(SingleBanner, `Single Banner retrive succusfully`));
+  } catch (error) {
+    return res
+      .status(501)
+      .json(
+        new apiError(
+          501,
+          null,
+          `Error from getSinglebanner controller: ${error}`
+        )
+      );
+  }
+};
+
+const deleteBanner = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedItem = await bannerModel.findByIdAndDelete(id);
+    if (!deletedItem) {
+      return res
+        .status(404)
+        .json(new apiError(404, null, `single banner not found for Delete`));
+    }
+    return res
+      .status(201)
+      .json(new apiResponse(deletedItem, `Single Banner Deleted succusfully`));
+  } catch (error) {
+    return res
+      .status(501)
+      .json(
+        new apiError(501, null, `Error from Delete banner controller: ${error}`)
+      );
+  }
+};
+
+const updateBanner = async (req, res) => {
+  try {
+  } catch (error) {
+    return res
+      .status(501)
+      .json(
+        new apiError(501, null, `Error from update banner controller: ${error}`)
+      );
+  }
+};
+
+module.exports = {
+  createBanner,
+  getallBanner,
+  getSinglebanner,
+  deleteBanner,
+  updateBanner,
+};

@@ -15,6 +15,6 @@ _.route("/banner")
 _.route("/banner/:id")
   .get(getSinglebanner)
   .delete(deleteBanner)
-  .put(upload.fields([{ name: "image", maxCount: 5 }]), updateBanner);
+  .put(upload.fields([{ name: "image", maxCount: 1 }]), updateBanner);
 
 module.exports = _;

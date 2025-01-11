@@ -1,6 +1,7 @@
 const subCategoryModel = require("../Model/subCategory.model");
 const { apiResponse } = require("../Utils/apiResponse");
 const { apiError } = require("../Utils/apiError");
+const CategoryModel = require("../Model/category.model");
 
 const subCategory = async (req, res) => {
   try {
@@ -29,6 +30,16 @@ const subCategory = async (req, res) => {
     }
     const saveSubCategory = await subCategoryModel.create({ ...req.body });
     if (saveSubCategory) {
+      const findCategory = await CategoryModel.findOne({
+        _id: req.body.category,
+      });
+      if (!findCategory) {
+        return res
+          .status(401)
+          .json(new apiError(401, null, `Category not found!!`));
+      }
+      findCategory.subCategory.push(saveSubCategory._id);
+      await findCategory.save();
       return res
         .status(201)
         .json(

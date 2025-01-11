@@ -12,10 +12,12 @@ const categoryModel = new Schema({
     required: true,
     trim: true,
   },
-  subCategory: {
-    type: Schema.Types.ObjectId,
-    hef: "subcategory",
-  },
+  subCategory: [
+    {
+      type: Schema.Types.ObjectId,
+      hef: "subcategory",
+    },
+  ],
   isActive: {
     type: Boolean,
     default: false,

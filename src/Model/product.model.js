@@ -12,6 +12,10 @@ const productModel = new Schema({
     required: true,
     trim: true,
   },
+  discount: {
+    type: String,
+    default: 0,
+  },
   price: {
     type: Number,
     required: true,
@@ -19,13 +23,17 @@ const productModel = new Schema({
   },
   stock: {
     type: Number,
+    required: true,
+    default: 0,
   },
   rating: {
     type: Number,
+    defult: 0,
+    max: 5,
   },
   review: [
     {
-      type: Number,
+      type: String,
       trim: true,
     },
   ],

@@ -12,8 +12,17 @@ const {
 // create products
 const createProduct = async (req, res) => {
   try {
-    const { name, description, price, category, subCategory, review } =
-      req.body;
+    const {
+      name,
+      description,
+      price,
+      category,
+      subCategory,
+      review,
+      stock,
+      rating,
+      discount,
+    } = req.body;
     if (!name || !description || !price || !category || !subCategory) {
       return res
         .status(404)
@@ -50,6 +59,9 @@ const createProduct = async (req, res) => {
       category,
       subCategory,
       review,
+      stock,
+      rating,
+      discount,
     }).save();
 
     if (savedProduct) {

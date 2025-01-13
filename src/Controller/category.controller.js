@@ -47,7 +47,7 @@ const createCategory = async (req, res) => {
 
 const Allcategory = async (req, res) => {
   try {
-    const allcategories = await categoryModel.find({});
+    const allcategories = await categoryModel.find({}).populate("subCategory");
     if (!allcategories?.length) {
       return res
         .status(404)
@@ -55,7 +55,14 @@ const Allcategory = async (req, res) => {
     }
     return res
       .status(201)
-      .json(new apiResponse(allcategories, `All Category fetch succusfully`));
+      .json(
+        new apiResponse(
+          true,
+          allcategories,
+          `All Category fetch succusfully`,
+          false
+        )
+      );
   } catch (error) {
     return res
       .status(501)

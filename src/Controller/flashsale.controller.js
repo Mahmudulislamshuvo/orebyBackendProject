@@ -80,7 +80,14 @@ const GetAllFlashsaleProduct = async (req, res) => {
     }
     return res
       .status(201)
-      .json(new apiResponse(AllFlashsalProducts, `FlashSale Product retrived`));
+      .json(
+        new apiResponse(
+          true,
+          AllFlashsalProducts,
+          `FlashSale Product retrived`,
+          false
+        )
+      );
   } catch (error) {
     return res
       .status(501)
@@ -126,7 +133,9 @@ const UpdateFlashSaleProduct = async (req, res) => {
     }
     return res
       .status(201)
-      .json(new apiResponse(UpdatedProduct, `FlashSale Prduct updated`));
+      .json(
+        new apiResponse(true, UpdatedProduct, `FlashSale Prduct updated`, false)
+      );
   } catch (error) {
     return res
       .status(501)

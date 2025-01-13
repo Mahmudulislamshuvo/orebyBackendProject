@@ -15,7 +15,7 @@ const categoryModel = new Schema({
   subCategory: [
     {
       type: Schema.Types.ObjectId,
-      hef: "subcategory",
+      ref: "subcategory",
     },
   ],
   isActive: {

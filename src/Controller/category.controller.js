@@ -1,6 +1,10 @@
 const categoryModel = require("../Model/category.model");
 const { apiResponse } = require("../Utils/apiResponse");
 const { apiError } = require("../Utils/apiError");
+const {
+  uploadCloudinaryFile,
+  deleteCloudinaryFile,
+} = require("../Utils/cloudinary");
 
 const createCategory = async (req, res) => {
   try {
@@ -12,6 +16,11 @@ const createCategory = async (req, res) => {
           new apiError(false, 404, null, "Name or description missing!!", true)
         );
     }
+    const AllCategoryImg = req?.files;
+    const UploadedImgPath = AllCategoryImg.image[0].path;
+    const uploadToCloudinary = await uploadCloudinaryFile(UploadedImgPath);
+    const ImgWithDomain = deleteCloudinaryFile(req.files?.image);
+
     const isExistCategory = await categoryModel.find({ name: name });
     if (isExistCategory?.length) {
       return res
@@ -21,6 +30,7 @@ const createCategory = async (req, res) => {
     const saveCategory = await categoryModel.create({
       name,
       description,
+      image: uploadToCloudinary.secure_url,
     });
     if (saveCategory) {
       return res

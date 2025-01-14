@@ -86,43 +86,114 @@ const createProduct = async (req, res) => {
 };
 
 // get all product
+// const getAllproducts = async (req, res) => {
+//   try {
+//     const value = myCache.get("allproduct");
+
+//     const allProducts = await productModel
+//       .find({})
+//       .populate(["category", "subCategory"]);
+//     myCache.set("allproduct", JSON.stringify(allProducts), 600 * 600);
+//     if (value == undefined) {
+//       if (allProducts) {
+//         return res
+//           .status(201)
+//           .json(
+//             new apiResponse(
+//               true,
+//               allProducts,
+//               `All product retrive successfull`,
+//               false
+//             )
+//           );
+//       }
+//     } else {
+//       return res
+//         .status(201)
+//         .json(
+//           new apiResponse(
+//             JSON.parse(value),
+//             true,
+//             allProducts,
+//             `Allproduct retrive success from Else`,
+//             false
+//           )
+//         );
+//     }
+
+//     return res
+//       .status(404)
+//       .json(new apiError(404, null, `unable to retrive All product try again`));
+//   } catch (error) {
+//     return res
+//       .status(501)
+//       .json(
+//         new apiError(
+//           501,
+//           null,
+//           `GetAllProduct failed!! Error from GetAllProduct controller: ${error}`
+//         )
+//       );
+//   }
+// };
 const getAllproducts = async (req, res) => {
   try {
-    const value = myCache.get("allproduct");
-    if (value == undefined) {
-      const allProducts = await productModel
-        .find({})
-        .populate(["category", "subCategory"]);
-      myCache.set("allproduct", JSON.stringify(allProducts), 600 * 600);
-      if (allProducts) {
-        return res
-          .status(201)
-          .json(
-            new apiResponse(allProducts, `All product retrive successfull`)
-          );
-      }
-    } else {
+    // Check if data exists in cache
+    const cachedValue = myCache.get("allproduct");
+
+    if (cachedValue) {
+      // If cached data is found, parse and return it
       return res
-        .status(201)
+        .status(200)
         .json(
           new apiResponse(
-            JSON.parse(value),
-            `Allproduct retrive success from Else`
+            true,
+            JSON.parse(cachedValue),
+            `All products retrieved successfully from cache`,
+            false
           )
         );
     }
 
+    // If no cache, fetch data from database
+    const allProducts = await productModel
+      .find({})
+      .populate(["category", "subCategory"]);
+
+    if (!allProducts) {
+      return res
+        .status(404)
+        .json(
+          new apiError(
+            404,
+            null,
+            `Unable to retrieve products, please try again`
+          )
+        );
+    }
+
+    // Cache the data for future use
+    myCache.set("allproduct", JSON.stringify(allProducts), 600 * 600);
+
+    // Return fetched data
     return res
-      .status(404)
-      .json(new apiError(404, null, `unable to retrive All product try again`));
+      .status(200)
+      .json(
+        new apiResponse(
+          true,
+          allProducts,
+          `All products retrieved successfully`,
+          false
+        )
+      );
   } catch (error) {
     return res
-      .status(501)
+      .status(500)
       .json(
         new apiError(
-          501,
+          500,
           null,
-          `GetAllProduct failed!! Error from GetAllProduct controller: ${error}`
+          `GetAllProduct failed! Error from controller: ${error.message}`
         )
       );
   }

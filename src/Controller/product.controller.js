@@ -8,6 +8,7 @@ const {
   uploadCloudinaryFile,
   deleteCloudinaryFile,
 } = require("../Utils/cloudinary");
+const categoryModel = require("../Model/category.model");
 
 // create products
 const createProduct = async (req, res) => {
@@ -23,6 +24,7 @@ const createProduct = async (req, res) => {
       rating,
       discount,
     } = req.body;
+
     if (!name || !description || !price || !category || !subCategory) {
       return res
         .status(404)
@@ -63,11 +65,32 @@ const createProduct = async (req, res) => {
       rating,
       discount,
     }).save();
-
+    myCache.del("allproduct");
     if (savedProduct) {
+      const searchCategory = await categoryModel.findOne({ _id: category });
+      searchCategory.product.push(savedProduct._id);
+      await searchCategory.save();
+
+      // another way from support team
+
+      // await categoryModel.findOneAndUpdate(
+      //   { _id: category },
+      //   {
+      //     $push: {
+      //       product: savedProduct._id,
+      //     },
+      //   }
+      // );
       return res
         .status(201)
-        .json(new apiResponse(savedProduct, `Product created succusfully`));
+        .json(
+          new apiResponse(
+            true,
+            savedProduct,
+            `Product created succusfully`,
+            false
+          )
+        );
     }
     return res
       .status(404)
@@ -86,56 +109,6 @@ const createProduct = async (req, res) => {
 };
 
 // get all product
-// const getAllproducts = async (req, res) => {
-//   try {
-//     const value = myCache.get("allproduct");
-
-//     const allProducts = await productModel
-//       .find({})
-//       .populate(["category", "subCategory"]);
-//     myCache.set("allproduct", JSON.stringify(allProducts), 600 * 600);
-//     if (value == undefined) {
-//       if (allProducts) {
-//         return res
-//           .status(201)
-//           .json(
-//             new apiResponse(
-//               true,
-//               allProducts,
-//               `All product retrive successfull`,
-//               false
-//             )
-//           );
-//       }
-//     } else {
-//       return res
-//         .status(201)
-//         .json(
-//           new apiResponse(
-//             JSON.parse(value),
-//             true,
-//             allProducts,
-//             `Allproduct retrive success from Else`,
-//             false
-//           )
-//         );
-//     }
-
-//     return res
-//       .status(404)
-//       .json(new apiError(404, null, `unable to retrive All product try again`));
-//   } catch (error) {
-//     return res
-//       .status(501)
-//       .json(
-//         new apiError(
-//           501,
-//           null,
-//           `GetAllProduct failed!! Error from GetAllProduct controller: ${error}`
-//         )
-//       );
-//   }
-// };
 const getAllproducts = async (req, res) => {
   try {
     // Check if data exists in cache
@@ -239,8 +212,6 @@ const updateProduct = async (req, res) => {
           .json(new apiResponse(updatedProduct, `updated Product succusfully`));
       }
     }
-
-    // console.log(updatedProduct);
   } catch (error) {
     return res
       .status(501)
@@ -261,13 +232,17 @@ const getSingleProduct = async (req, res) => {
       .findById(productId)
       .populate(["category", "subCategory"])
       .lean();
-    console.log(SingleProduct);
 
     if (SingleProduct) {
       return res
         .status(201)
         .json(
-          new apiResponse(SingleProduct, `Single product retrive successfull`)
+          new apiResponse(
+            true,
+            SingleProduct,
+            `Single product retrive successfull`,
+            false
+          )
         );
     }
     return res

@@ -85,7 +85,9 @@ const Allcategory = async (req, res) => {
 const singlgCategory = async (req, res) => {
   try {
     const { id } = req.params;
-    const SinglgCategory = await categoryModel.findById(id);
+    const SinglgCategory = await categoryModel
+      .findById(id)
+      .populate(["product", "subCategory"]);
     if (!SinglgCategory) {
       return res
         .status(404)
@@ -94,7 +96,12 @@ const singlgCategory = async (req, res) => {
     return res
       .status(201)
       .json(
-        new apiResponse(SinglgCategory, `Single Category fetch succusfully`)
+        new apiResponse(
+          true,
+          SinglgCategory,
+          `Single Category fetch succusfully`,
+          false
+        )
       );
   } catch (error) {
     return res

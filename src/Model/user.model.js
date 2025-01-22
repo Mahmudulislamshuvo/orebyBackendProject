@@ -30,7 +30,6 @@ const UserModel = new Schema(
     },
     address1: {
       type: String,
-      required: [true, "address1 missing !!"],
       trime: true,
     },
     address2: {

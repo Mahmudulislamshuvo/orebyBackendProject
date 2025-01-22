@@ -9,9 +9,9 @@ const { makeJWTToken } = require("../Helper/jwtToken.js");
 
 const Registration = async (req, res) => {
   try {
-    const { firstName, email, mobile, address1, password } = req.body;
+    const { firstName, email, mobile, password } = req.body;
     // password and mail checker
-    if (!firstName || !email || !mobile || !address1 || !password) {
+    if (!firstName || !email || !mobile || !password) {
       return res
         .status(401)
         .json(
@@ -44,7 +44,6 @@ const Registration = async (req, res) => {
         firstName,
         email,
         mobile,
-        address1,
         password: HashPass,
         Otp: Otp,
       }).save();
@@ -56,7 +55,12 @@ const Registration = async (req, res) => {
       return res
         .status(201)
         .json(
-          new apiResponse(true, saveUserdata, "data saved to database", false)
+          new apiResponse(
+            true,
+            saveUserdata,
+            "Email sent to User and Data saved",
+            false
+          )
         );
     }
     return res

@@ -1,4 +1,4 @@
-const otptemplete = (Otp) => {
+const otptemplete = (Otp, userEmail) => {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -93,12 +93,12 @@ const otptemplete = (Otp) => {
     <div class="otp-code">${Otp}</div> <!-- Display OTP code here -->
     
     <div class="btn-container">
-      <button class="btn">VERIFY MY ACCOUNT</button>
+      <button class="btn"> <a href="http://localhost:5173/otp-verify/${userEmail}">VERIFY MY ACCOUNT</a></button>
     </div>
     
     <p class="alt-text">
       If the button above doesn't work, copy and paste the following link into your browser:<br>
-      <a href="#">[Insert Verification URL]</a>
+      <a href="http://localhost:5173/otp-verify/${userEmail}">Verification URL</a>
     </p>
   </div>
 </body>

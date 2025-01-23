@@ -51,7 +51,7 @@ const Registration = async (req, res) => {
       setTimeout(() => {
         saveUserdata.Otp = null;
         saveUserdata.save();
-      }, 10000 * 20);
+      }, 10000 * 25);
       return res
         .status(201)
         .json(

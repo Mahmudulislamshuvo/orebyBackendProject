@@ -16,8 +16,8 @@ async function sendMail(userEmail, Otp) {
     const info = await transporter.sendMail({
       from: process.env.EMAIL,
       to: userEmail,
-      subject: "Verify Your Account ✔",
-      html: otptemplete(Otp),
+      subject: "Verify Your Oreby Account ✔",
+      html: otptemplete(Otp, userEmail),
     });
     console.log("Message sent: %s", info.messageId);
     return true;

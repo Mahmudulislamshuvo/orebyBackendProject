@@ -91,7 +91,7 @@ const singlgCategory = async (req, res) => {
     if (!SinglgCategory) {
       return res
         .status(404)
-        .json(new apiError(404, null, `This category not found`));
+        .json(new apiError(false, 404, null, `This category not found`, true));
     }
     return res
       .status(201)

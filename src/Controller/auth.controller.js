@@ -123,6 +123,11 @@ const login = async (req, res) => {
     const loggedUser = await userModel.findOne({
       $or: [{ email: emailOrphone }, { mobile: emailOrphone }],
     });
+    if (!loggedUser) {
+      return res
+        .status(404)
+        .json(new apiError(false, 404, null, "User not found", true));
+    }
     // decript the password
     const IspassCorrect = await comparePassword(password, loggedUser?.password);
 

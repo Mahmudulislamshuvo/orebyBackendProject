@@ -77,6 +77,10 @@ const UserModel = new Schema(
       type: Boolean,
       default: false,
     },
+    cartitem: {
+      type: Schema.Types.ObjectId,
+      ref: "cart",
+    },
   },
   {
     Timestamp: true,

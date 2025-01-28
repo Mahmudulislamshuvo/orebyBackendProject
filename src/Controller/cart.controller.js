@@ -66,4 +66,19 @@ const AddtoCart = async (req, res) => {
   }
 };
 
-module.exports = { AddtoCart };
+const GetCartItemUser = async (req, res) => {
+  try {
+  } catch (error) {
+    return res
+      .status(501)
+      .json(
+        new apiError(
+          501,
+          null,
+          `Error from GetCartItemUser controller: ${error}`
+        )
+      );
+  }
+};
+
+module.exports = { AddtoCart, GetCartItemUser };

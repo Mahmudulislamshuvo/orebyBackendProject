@@ -105,7 +105,15 @@ const OtpVerify = async (req, res) => {
   } catch (error) {
     return res
       .status(404)
-      .json(new apiError(false, 404, null, "Otp verify failed", true));
+      .json(
+        new apiError(
+          false,
+          404,
+          null,
+          "Otp verify failed from Controller",
+          true
+        )
+      );
   }
 };
 

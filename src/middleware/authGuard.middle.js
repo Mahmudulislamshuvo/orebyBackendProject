@@ -8,7 +8,7 @@ const authGuard = async (req, res, next) => {
     if (token || req.headers.authorization) {
       const decoded = await jwt.verify(
         token || req.headers.authorization,
-        process.env.TOKEN_SECRAT
+        process.env.TOKEN_SECRET
       );
 
       if (decoded) {
@@ -17,6 +17,7 @@ const authGuard = async (req, res, next) => {
           useremail: decoded.email,
         };
         req.user = user;
+
         next();
       }
     } else {

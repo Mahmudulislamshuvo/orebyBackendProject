@@ -1,6 +1,6 @@
 const express = require("express");
 const _ = express.Router();
-
+const { authGuard } = require("../../middleware/authGuard.middle");
 const {
   Registration,
   OtpVerify,
@@ -10,7 +10,6 @@ const {
   resetEmail,
   setRecoveryEmail,
 } = require("../../Controller/auth.controller");
-const { authGuard } = require("../../middleware/authGuard.middle");
 
 _.route("/auth/resgistration").post(Registration);
 _.route("/auth/verify-otp").post(OtpVerify);

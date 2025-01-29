@@ -6,6 +6,7 @@ const UserMolel = require("../Model/user.model");
 const AddtoCart = async (req, res) => {
   try {
     const { user, product, size, color, quantity } = req.body;
+
     if (!user || !product || !quantity) {
       return res
         .status(404)
@@ -19,13 +20,29 @@ const AddtoCart = async (req, res) => {
           )
         );
     }
-    // checking product already in a cart or not
-    const PrductAlreadyInCart = await CartModel.findOne({ product });
-    if (PrductAlreadyInCart) {
+    const WhichUser = await UserMolel.findById(req.user.userId).populate(
+      "cartitem"
+    );
+
+    // check if the product is already in the cart
+    const isAlreadyInCart = WhichUser.cartitem.find((cartId) => {
+      return cartId.product.toString() === product.toString();
+    });
+
+    if (isAlreadyInCart) {
       return res
-        .status(404)
-        .json(new apiError(false, 404, null, `Product already in cart`, true));
+        .status(400)
+        .json(
+          new apiError(
+            false,
+            400,
+            null,
+            `This product is already in the cart`,
+            true
+          )
+        );
     }
+
     // Save it to cart
     const SaveCart = await new CartModel({
       user,
@@ -41,6 +58,18 @@ const AddtoCart = async (req, res) => {
           new apiError(false, 404, null, `unable to add product to cart`, true)
         );
     }
+
+    // Search Which User is Added to cart
+
+    WhichUser.cartitem.push(SaveCart._id);
+    await WhichUser.save();
+
+    if (!WhichUser) {
+      return res
+        .status(404)
+        .json(new apiError(false, 404, null, `user not found`, true));
+    }
+    // send response for cart model
     if (SaveCart) {
       return res
         .status(201)
@@ -53,10 +82,6 @@ const AddtoCart = async (req, res) => {
           )
         );
     }
-    // Search Which User is Added to cart
-    const WhichUser = await UserMolel.findOne({ id: user });
-    WhichUser.cartitem.push();
-    await WhichUser.save();
   } catch (error) {
     return res
       .status(501)
@@ -68,6 +93,9 @@ const AddtoCart = async (req, res) => {
 
 const GetCartItemUser = async (req, res) => {
   try {
+    const user = req.user;
+    const AllcartItem = await CartModel.find({ user: user.userId });
+    console.log(AllcartItem.length);
   } catch (error) {
     return res
       .status(501)

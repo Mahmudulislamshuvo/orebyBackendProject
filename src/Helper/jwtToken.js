@@ -6,7 +6,7 @@ const makeJWTToken = async (userinfo) => {
       {
         ...userinfo,
       },
-      process.env.TOKEN_SECRAT,
+      process.env.TOKEN_SECRET,
       { expiresIn: process.env.TOKEN_EXPIRY_DATE }
     );
     return token;

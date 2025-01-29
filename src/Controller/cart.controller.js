@@ -96,7 +96,7 @@ const GetCartItemUser = async (req, res) => {
     const user = req.user;
     const AllcartItem = await CartModel.find({ user: user.userId })
       .populate({ path: "product" })
-      .populate({ path: "user" })
+      .populate({ path: "user", select: "-recoveryEmail -password -Otp" })
       .lean();
 
     if (!AllcartItem.length) {
@@ -108,8 +108,6 @@ const GetCartItemUser = async (req, res) => {
     AllcartItem.forEach((item) => {
       // Use forEach instead of map (no return value needed)
       const { product, quantity } = item;
-      console.log((totalQuantity += quantity));
-
       totalItem += product.price * quantity;
       totalQuantity += quantity;
     });
@@ -213,10 +211,52 @@ const deleteCartItem = async (req, res) => {
   }
 };
 
+const userCart = async (req, res) => {
+  try {
+    const user = req.user; //comes from Authguad
+    const { userId } = user;
+    const cartItems = await CartModel.find({
+      user: userId,
+    })
+      .populate({ path: "user", select: "-Otp -recoveryEmail -password" })
+      .populate("product");
+
+    // reduce result, this is new for me
+    const TotalpriceOfCart = cartItems.reduce(
+      (initialValue, item) => {
+        const { product, quantity } = item;
+        initialValue.totalAmount += product.price * quantity;
+        initialValue.totalQuantity += quantity;
+        return initialValue;
+      },
+      { totalAmount: 0, totalQuantity: 0 }
+    );
+    return res.status(201).json(
+      new apiResponse(
+        true,
+        {
+          cartItems,
+          totalAmount: TotalpriceOfCart.totalAmount,
+          totalQuantity: TotalpriceOfCart.totalQuantity,
+        },
+        `Cart Item deleted succesfully`,
+        false
+      )
+    );
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        new apiError(500, `Error from userCart controller: ${error.message}`)
+      );
+  }
+};
+
 module.exports = {
   AddtoCart,
   GetCartItemUser,
   decrementCartitem,
   incrementCartitem,
   deleteCartItem,
+  userCart,
 };

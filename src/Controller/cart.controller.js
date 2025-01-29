@@ -94,19 +94,129 @@ const AddtoCart = async (req, res) => {
 const GetCartItemUser = async (req, res) => {
   try {
     const user = req.user;
-    const AllcartItem = await CartModel.find({ user: user.userId });
-    console.log(AllcartItem.length);
+    const AllcartItem = await CartModel.find({ user: user.userId })
+      .populate({ path: "product" })
+      .populate({ path: "user" })
+      .lean();
+
+    if (!AllcartItem.length) {
+      return res.status(404).json(new apiError(404, "CartItem not found"));
+    }
+
+    let totalItem = 0;
+    let totalQuantity = 0;
+    AllcartItem.forEach((item) => {
+      // Use forEach instead of map (no return value needed)
+      const { product, quantity } = item;
+      console.log((totalQuantity += quantity));
+
+      totalItem += product.price * quantity;
+      totalQuantity += quantity;
+    });
+
+    return res
+      .status(201)
+      .json(
+        new apiResponse(
+          true,
+          AllcartItem,
+          `All cart Item and quantity retrive from single user`,
+          false
+        )
+      );
   } catch (error) {
     return res
-      .status(501)
+      .status(500)
+      .json(new apiError(500, `Error fetching cart items: ${error.message}`));
+  }
+};
+
+const incrementCartitem = async (req, res) => {
+  try {
+    const { cartid } = req.params;
+    const cartItem = await CartModel.findById(cartid);
+    cartItem.quantity += 1;
+    await cartItem.save();
+    return res
+      .status(201)
+      .json(
+        new apiResponse(true, cartItem, `Quantuty increse 1 succesfull`, false)
+      );
+  } catch (error) {
+    return res
+      .status(500)
       .json(
         new apiError(
-          501,
-          null,
-          `Error from GetCartItemUser controller: ${error}`
+          500,
+          `Error from incrementCartitem controller: ${error.message}`
         )
       );
   }
 };
 
-module.exports = { AddtoCart, GetCartItemUser };
+const decrementCartitem = async (req, res) => {
+  try {
+    const { cartid } = req.params; // Get cart ID from URL
+    // 1. Find the specific cart item
+    const cartItem = await CartModel.findById(cartid);
+    if (!cartItem) {
+      return res
+        .status(400)
+        .json(new apiError(false, 400, null, `this CartItem not found`, true));
+    }
+    cartItem.quantity -= 1;
+    cartItem.save();
+    return res
+      .status(201)
+      .json(
+        new apiResponse(
+          true,
+          cartItem,
+          `Quantuty decrement 1 succesfull`,
+          false
+        )
+      );
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        new apiError(500, `Error from Decrement controller: ${error.message}`)
+      );
+  }
+};
+
+const deleteCartItem = async (req, res) => {
+  try {
+    const { cartid } = req.params; // Get cart ID from URL
+    // 1. Find the specific cart item
+    const cartItem = await CartModel.findByIdAndDelete(cartid);
+    if (!cartItem) {
+      return res
+        .status(400)
+        .json(new apiError(false, 400, null, `this CartItem not found`, true));
+    }
+
+    return res
+      .status(201)
+      .json(
+        new apiResponse(true, cartItem, `Cart Item deleted succesfully`, false)
+      );
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        new apiError(
+          500,
+          `Error from deleteCartItem controller: ${error.message}`
+        )
+      );
+  }
+};
+
+module.exports = {
+  AddtoCart,
+  GetCartItemUser,
+  decrementCartitem,
+  incrementCartitem,
+  deleteCartItem,
+};

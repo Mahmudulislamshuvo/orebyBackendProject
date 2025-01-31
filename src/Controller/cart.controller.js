@@ -239,7 +239,7 @@ const userCart = async (req, res) => {
           totalAmount: TotalpriceOfCart.totalAmount,
           totalQuantity: TotalpriceOfCart.totalQuantity,
         },
-        `Cart Item deleted succesfully`,
+        `Cart Item retrive succesfully`,
         false
       )
     );

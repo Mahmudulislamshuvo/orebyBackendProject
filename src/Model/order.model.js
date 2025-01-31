@@ -6,10 +6,12 @@ const orderSchema = new Schema({
     type: Types.ObjectId,
     ref: "user",
   },
-  cartItem: {
-    type: Types.ObjectId,
-    ref: "cart",
-  },
+  cartItem: [
+    {
+      type: Types.ObjectId,
+      ref: "cart",
+    },
+  ],
   customerinfo: {
     address1: {
       type: String,
@@ -25,7 +27,7 @@ const orderSchema = new Schema({
       required: true,
       trim: true,
     },
-    divition: {
+    division: {
       type: String,
       required: true,
       trim: true,

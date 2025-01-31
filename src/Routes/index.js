@@ -10,6 +10,7 @@ const flashsaleRoute = require("./api/flashsale.apiRoute.js");
 const bestsellingRoute = require("./api/bestselling.apiRoute.js");
 const contactusRoute = require("./api/contactus.apiRoute.js");
 const cartRoute = require("./api/cart.apiRoute.js");
+const orderRoute = require("./api/order.apiRote");
 
 const baseApi = process.env.BASE_API;
 
@@ -22,6 +23,7 @@ _.use(baseApi, flashsaleRoute);
 _.use(baseApi, bestsellingRoute);
 _.use(baseApi, contactusRoute);
 _.use(baseApi, cartRoute);
+_.use(baseApi, orderRoute);
 
 _.use("*", (req, res) => {
   res.status(405).json(new apiError(false, null, "Your Rooute is Invalid"));

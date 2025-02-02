@@ -14,12 +14,10 @@ const invoiceSchema = new Schema(
     order: {
       type: Types.ObjectId,
       ref: "order",
-      required: true,
     },
     tranId: {
       type: String,
       unique: true,
-      required: true,
       trim: true,
     },
     valId: {

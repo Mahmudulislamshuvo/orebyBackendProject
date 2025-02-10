@@ -81,6 +81,20 @@ const OtpVerify = async (req, res) => {
         .status(401)
         .json(new apiError(false, 401, null, "Otp creadential missing", true));
     }
+
+    // check email already registered or not
+    const emailAlreadyRegistered = await userModel.findOne({
+      email: email,
+    });
+
+    if (emailAlreadyRegistered) {
+      if (
+        emailAlreadyRegistered.Otp === parseInt(Otp) &&
+        new Date().getTime() <= emailAlreadyRegistered.otpExpire
+      ) {
+        console.log("trying");
+      }
+    }
     const IsExistingUser = await userModel
       .findOne({ email: email, Otp: Otp })
       .select("-password -email -Otp");

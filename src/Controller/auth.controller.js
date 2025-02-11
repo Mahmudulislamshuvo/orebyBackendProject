@@ -10,15 +10,17 @@ const { makeJWTToken } = require("../Helper/jwtToken.js");
 const Registration = async (req, res) => {
   try {
     const { firstName, email, mobile, password } = req.body;
-    // password and mail checker
+
+    // Check required fields
     if (!firstName || !email || !mobile || !password) {
       return res
         .status(401)
         .json(
-          new apiError(false, 401, null, "User Credential missing!!", true)
+          new apiError(false, 401, null, "User credentials missing!", true)
         );
     }
-    // Email and pass formate Checker
+
+    // Check email and password format first
     if (!Mailchecker(email) || !PasswordChecker(password)) {
       return res
         .status(401)
@@ -27,51 +29,191 @@ const Registration = async (req, res) => {
             false,
             401,
             null,
-            "Email or Password formate invalid!!",
+            "Email or password format invalid!",
             true
           )
         );
     }
-    // Hash password
+
+    // Check if the email is already registered
+    const existingUser = await userModel.findOne({ email });
+    if (existingUser) {
+      if (existingUser.isVerified === false) {
+        // Generate a new OTP
+        const newOtp = await numbergenertor();
+        // Update the existing user with the new OTP and a new expiry time (10 minutes from now)
+        existingUser.Otp = newOtp;
+        existingUser.otpExpire = Date.now() + 10 * 60 * 1000;
+        await existingUser.save();
+
+        // Send the OTP email
+        const emailSent = await sendMail(email, newOtp);
+        if (!emailSent) {
+          return res
+            .status(401)
+            .json(
+              new apiError(
+                false,
+                401,
+                null,
+                "Unable to send OTP email. Please try again.",
+                true
+              )
+            );
+        }
+
+        return res
+          .status(409)
+          .json(
+            new apiError(
+              false,
+              409,
+              null,
+              "This email is already registered. We have resent the OTP to your email. Please verify your account.",
+              true
+            )
+          );
+      } else {
+        // User exists and is verified. Inform them to log in.
+        return res
+          .status(409)
+          .json(
+            new apiError(
+              false,
+              409,
+              null,
+              "This email is already registered. Please log in.",
+              true
+            )
+          );
+      }
+    }
+
+    // Hash the password
     const HashPass = await makeHashPassword(password);
-    // otp gen
-    const Otp = await numbergenertor();
-    // send account verification otp mail to user
-    const IsMaiSend = await sendMail(email, Otp);
-    // save data to database with single time otp
-    if (IsMaiSend) {
-      const saveUserdata = await new userModel({
-        firstName,
-        email,
-        mobile,
-        password: HashPass,
-        Otp: Otp,
-      }).save();
-      // otp save to database temporary comment
-      setTimeout(() => {
-        saveUserdata.Otp = null;
-        saveUserdata.save();
-      }, 10000 * 25);
+
+    // Generate a new OTP and determine its expiration time (10 minutes from now)
+    const newOtp = await numbergenertor();
+    const otpExpireTime = Date.now() + 10 * 60 * 1000;
+
+    // Send OTP email
+    const emailSent = await sendMail(email, newOtp);
+    if (!emailSent) {
       return res
-        .status(201)
+        .status(401)
         .json(
-          new apiResponse(
-            true,
-            saveUserdata,
-            "Email sent to User and Data saved",
-            false
+          new apiError(
+            false,
+            401,
+            null,
+            "Unable to send OTP email. Please try again.",
+            true
           )
         );
     }
+
+    // Create and save the new user document
+    const newUser = new userModel({
+      firstName,
+      email,
+      mobile,
+      password: HashPass,
+      Otp: newOtp,
+      otpExpire: otpExpireTime,
+      isVerified: false,
+    });
+
+    const savedUser = await newUser.save();
+
     return res
-      .status(501)
-      .json(new apiError(false, 501, null, "Problem with send mail", true));
+      .status(201)
+      .json(
+        new apiResponse(
+          true,
+          savedUser,
+          "Email sent to user and data saved",
+          false
+        )
+      );
   } catch (error) {
     return res
       .status(505)
-      .json(new apiError(false, 505, null, "Registration failed", true));
+      .json(
+        new apiError(false, 505, null, `Registration failed: ${error}`, true)
+      );
   }
 };
+
+// const OtpVerify = async (req, res) => {
+//   try {
+//     const { email, Otp } = req.body;
+//     if (!email || !Otp) {
+//       return res
+//         .status(401)
+//         .json(new apiError(false, 401, null, "Otp credentials missing", true));
+//     }
+
+//     // Find the user by email
+//     const user = await userModel.findOne({ email: email });
+//     if (!user) {
+//       return res
+//         .status(401)
+//         .json(new apiError(false, 401, null, "User not found", true));
+//     }
+
+//     // Debug logs to check the values
+//     console.log("Stored OTP:", user.Otp);
+//     console.log("Provided OTP:", Otp);
+//     console.log("Current Time:", Date.now());
+//     console.log("OTP Expiry:", user.otpExpire);
+//     return;
+
+//     // Convert both OTPs to numbers to avoid type mismatch issues
+//     const storedOtp = Number(user.Otp);
+//     const providedOtp = Number(Otp);
+
+//     // Check if OTP matches and has not expired
+//     if (storedOtp === providedOtp && Date.now() <= user.otpExpire) {
+//       // OTP is valid, update the user record
+//       user.Otp = null;
+//       user.otpExpire = null;
+//       user.isVerified = true;
+//       await user.save();
+
+//       // Remove sensitive fields before sending the response
+//       const userData = user.toObject();
+//       delete userData.password;
+//       delete userData.Otp;
+
+//       return res
+//         .status(201)
+//         .json(
+//           new apiResponse(true, userData, "Otp verification successful", false)
+//         );
+//     } else {
+//       // OTP is invalid or expired; clear OTP details and return an error
+//       user.Otp = null;
+//       user.otpExpire = null;
+//       await user.save();
+
+//       return res
+//         .status(401)
+//         .json(new apiError(false, 401, null, "Otp expired or mismatch", true));
+//     }
+//   } catch (error) {
+//     return res
+//       .status(404)
+//       .json(
+//         new apiError(
+//           false,
+//           404,
+//           null,
+//           "Otp verification failed from Controller",
+//           true
+//         )
+//       );
+//   }
+// };
 
 const OtpVerify = async (req, res) => {
   try {
@@ -79,43 +221,45 @@ const OtpVerify = async (req, res) => {
     if (!email || !Otp) {
       return res
         .status(401)
-        .json(new apiError(false, 401, null, "Otp creadential missing", true));
+        .json(new apiError(false, 401, null, "Otp credentials missing", true));
     }
 
-    // check email already registered or not
-    const emailAlreadyRegistered = await userModel.findOne({
-      email: email,
-    });
-
-    if (emailAlreadyRegistered) {
-      if (
-        emailAlreadyRegistered.Otp === parseInt(Otp) &&
-        new Date().getTime() <= emailAlreadyRegistered.otpExpire
-      ) {
-        console.log("trying");
-      }
-    }
-    const IsExistingUser = await userModel
-      .findOne({ email: email, Otp: Otp })
-      .select("-password -email -Otp");
-    if (!IsExistingUser) {
+    // Check if user exists by email
+    const user = await userModel.findOne({ email: email });
+    if (!user) {
       return res
-        .status(404)
-        .json(new apiError(false, 404, null, "Otp or Email mismatch", true));
+        .status(401)
+        .json(new apiError(false, 401, null, "User not found", true));
     }
-    IsExistingUser.isVerified = true;
-    IsExistingUser.Otp = null;
-    await IsExistingUser.save();
-    return res
-      .status(201)
-      .json(
-        new apiResponse(
-          true,
-          IsExistingUser,
-          "Otp verification succesfull",
-          false
-        )
-      );
+
+    // Verify OTP and check if it's still valid
+    if (user.Otp == parseInt(Otp) && new Date().getTime() <= user.otpExpire) {
+      // OTP is correct and valid then update the user
+      user.Otp = null;
+      user.otpExpire = null;
+      user.isVerified = true;
+      await user.save();
+
+      // removing pass and otp from response
+      const userData = user.toObject();
+      delete userData.password;
+      delete userData.Otp;
+
+      return res
+        .status(201)
+        .json(
+          new apiResponse(true, userData, "Otp verification successful", false)
+        );
+    } else {
+      // OTP is invalid or expired; return error
+      user.Otp = null;
+      user.otpExpire = null;
+      await user.save();
+
+      return res
+        .status(401)
+        .json(new apiError(false, 401, null, "Otp expired or mismatch", true));
+    }
   } catch (error) {
     return res
       .status(404)
@@ -124,7 +268,7 @@ const OtpVerify = async (req, res) => {
           false,
           404,
           null,
-          "Otp verify failed from Controller",
+          "Otp verification failed from Controller",
           true
         )
       );
@@ -436,4 +580,5 @@ module.exports = {
   resetPassword,
   resetEmail,
   setRecoveryEmail,
+  OtpVerify,
 };

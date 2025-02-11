@@ -83,7 +83,11 @@ const UserModel = new Schema(
         ref: "cart",
       },
     ],
+    otpExpire: {
+      type: Number,
+    },
   },
+
   {
     Timestamp: true,
   }

@@ -144,77 +144,6 @@ const Registration = async (req, res) => {
   }
 };
 
-// const OtpVerify = async (req, res) => {
-//   try {
-//     const { email, Otp } = req.body;
-//     if (!email || !Otp) {
-//       return res
-//         .status(401)
-//         .json(new apiError(false, 401, null, "Otp credentials missing", true));
-//     }
-
-//     // Find the user by email
-//     const user = await userModel.findOne({ email: email });
-//     if (!user) {
-//       return res
-//         .status(401)
-//         .json(new apiError(false, 401, null, "User not found", true));
-//     }
-
-//     // Debug logs to check the values
-//     console.log("Stored OTP:", user.Otp);
-//     console.log("Provided OTP:", Otp);
-//     console.log("Current Time:", Date.now());
-//     console.log("OTP Expiry:", user.otpExpire);
-//     return;
-
-//     // Convert both OTPs to numbers to avoid type mismatch issues
-//     const storedOtp = Number(user.Otp);
-//     const providedOtp = Number(Otp);
-
-//     // Check if OTP matches and has not expired
-//     if (storedOtp === providedOtp && Date.now() <= user.otpExpire) {
-//       // OTP is valid, update the user record
-//       user.Otp = null;
-//       user.otpExpire = null;
-//       user.isVerified = true;
-//       await user.save();
-
-//       // Remove sensitive fields before sending the response
-//       const userData = user.toObject();
-//       delete userData.password;
-//       delete userData.Otp;
-
-//       return res
-//         .status(201)
-//         .json(
-//           new apiResponse(true, userData, "Otp verification successful", false)
-//         );
-//     } else {
-//       // OTP is invalid or expired; clear OTP details and return an error
-//       user.Otp = null;
-//       user.otpExpire = null;
-//       await user.save();
-
-//       return res
-//         .status(401)
-//         .json(new apiError(false, 401, null, "Otp expired or mismatch", true));
-//     }
-//   } catch (error) {
-//     return res
-//       .status(404)
-//       .json(
-//         new apiError(
-//           false,
-//           404,
-//           null,
-//           "Otp verification failed from Controller",
-//           true
-//         )
-//       );
-//   }
-// };
-
 const OtpVerify = async (req, res) => {
   try {
     const { email, Otp } = req.body;
@@ -271,6 +200,57 @@ const OtpVerify = async (req, res) => {
           "Otp verification failed from Controller",
           true
         )
+      );
+  }
+};
+
+const resendOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const findUser = await userModel.findOne({ email });
+    if (!findUser) {
+      return res
+        .status(404)
+        .json(
+          new apiError(false, 404, null, `Otp resend User not found`, true)
+        );
+    }
+
+    if (findUser.isVerified === true) {
+      return res
+        .status(404)
+        .json(new apiError(false, 404, null, `User is already verified`, true));
+    }
+
+    // Making Otp Time limit
+    const otpExpireTime = new Date().getTime() + 10 * 60 * 1000;
+    // gen Otp
+    const ResendOtpGen = await numbergenertor();
+    findUser.Otp = ResendOtpGen;
+    // sending email with new otp
+    const emailSentNewOtp = await sendMail(email, ResendOtpGen, "Resend Opt");
+    if (emailSentNewOtp) {
+      findUser.Otp = ResendOtpGen;
+      findUser.otpExpire = otpExpireTime;
+      await findUser.save();
+
+      return res
+        .status(201)
+        .json(
+          new apiResponse(true, findUser, "Resent otp successfully", false)
+        );
+    }
+    return res
+      .status(401)
+      .json(
+        new apiError(false, 401, null, `Otp resend failed try again`, true)
+      );
+  } catch (error) {
+    return res
+      .status(501)
+      .json(
+        new apiError(false, 501, null, `Otp resend Controller ${error}`, true)
       );
   }
 };
@@ -580,5 +560,5 @@ module.exports = {
   resetPassword,
   resetEmail,
   setRecoveryEmail,
-  OtpVerify,
+  resendOtp,
 };

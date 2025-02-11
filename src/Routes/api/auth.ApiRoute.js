@@ -9,6 +9,7 @@ const {
   resetPassword,
   resetEmail,
   setRecoveryEmail,
+  resendOtp,
 } = require("../../Controller/auth.controller");
 
 _.route("/auth/resgistration").post(Registration);
@@ -18,5 +19,6 @@ _.route("/auth/logout").get(authGuard, logout);
 _.route("/auth/reset-password").post(resetPassword);
 _.route("/auth/reset-email").post(authGuard, resetEmail);
 _.route("/auth/set-recoveryemail").post(authGuard, setRecoveryEmail);
+_.route("/auth/resendotp").post(resendOtp);
 
 module.exports = _;

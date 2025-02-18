@@ -59,7 +59,7 @@ const placeOrder = async (req, res) => {
         );
     }
     const data = await response.json();
-    const { totalAmount, totalQuantity } = data?.data;
+    const { totalAmount, totalCartItem } = data?.data;
 
     // Create a transaction id
     const transsection_id = crypto.randomUUID().split("-")[0];
@@ -73,7 +73,7 @@ const placeOrder = async (req, res) => {
         customerinfo: customerinfo,
         paymentinfo,
         subtotal: totalAmount,
-        totalitem: totalQuantity,
+        totalitem: totalCartItem,
       }).save();
 
       // Saving Invoice

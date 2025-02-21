@@ -5,9 +5,10 @@ const UserMolel = require("../Model/user.model");
 
 const AddtoCart = async (req, res) => {
   try {
-    const { user, product, size, color, quantity } = req.body;
+    const { product, size, color, quantity } = req.body;
+    console.log(req.body);
 
-    if (!user || !product || !quantity) {
+    if (!product || !quantity) {
       return res
         .status(404)
         .json(
@@ -46,7 +47,7 @@ const AddtoCart = async (req, res) => {
 
     // Save it to cart
     const SaveCart = await new CartModel({
-      user,
+      user: req.user.userId,
       product,
       size,
       color,
@@ -106,23 +107,32 @@ const GetCartItemUser = async (req, res) => {
 
     let totalItem = 0;
     let totalQuantity = 0;
-    AllcartItem.forEach((item) => {
-      // Use forEach instead of map (no return value needed)
+    // AllcartItem.forEach((item) => {
+    //   // Use forEach instead of map (no return value needed)
+    //   const { product, quantity } = item;
+    //   totalItem += product.price * quantity;
+    //   totalQuantity += quantity;
+    // });
+
+    AllcartItem?.map((item) => {
       const { product, quantity } = item;
-      totalItem += product.price * quantity;
+      totalItem += parseInt(product.price) * parseInt(quantity);
       totalQuantity += quantity;
     });
 
-    return res
-      .status(201)
-      .json(
-        new apiResponse(
-          true,
-          AllcartItem,
-          `All cart Item and quantity retrive from single user`,
-          false
-        )
-      );
+    return res.status(200).json(
+      new apiResponse(
+        true,
+        {
+          AllcartItem: AllcartItem,
+          totalAmount: totalItem,
+          totalQuantity: totalQuantity,
+        },
+
+        "Add to cart retrive Sucessfull",
+        false
+      )
+    );
   } catch (error) {
     return res
       .status(500)
@@ -186,7 +196,7 @@ const decrementCartitem = async (req, res) => {
 
 const deleteCartItem = async (req, res) => {
   try {
-    const { cartid } = req.params; // Get cart ID from URL
+    const { cartid } = req.params;
     // 1. Find the specific cart item
     const cartItem = await CartModel.findByIdAndDelete(cartid);
     if (!cartItem) {
@@ -253,6 +263,34 @@ const userCart = async (req, res) => {
   }
 };
 
+const removeCartItem = async (req, res) => {
+  try {
+    const { cartid } = req.query;
+    // 1. Find the specific cart item
+    const cartItem = await CartModel.findByIdAndDelete(cartid);
+    if (!cartItem) {
+      return res
+        .status(400)
+        .json(new apiError(false, 400, null, `this CartItem not found`, true));
+    }
+
+    return res
+      .status(201)
+      .json(
+        new apiResponse(true, cartItem, `Cart Item deleted succesfully`, false)
+      );
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        new apiError(
+          500,
+          `Error from removeCartItem controller: ${error.message}`
+        )
+      );
+  }
+};
+
 module.exports = {
   AddtoCart,
   GetCartItemUser,
@@ -260,4 +298,5 @@ module.exports = {
   incrementCartitem,
   deleteCartItem,
   userCart,
+  removeCartItem,
 };

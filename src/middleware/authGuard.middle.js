@@ -17,18 +17,35 @@ const authGuard = async (req, res, next) => {
           useremail: decoded.email,
         };
         req.user = user;
-
-        next();
+        return next();
       }
     } else {
+      // No token provided; send unauthorized response.
       return res
-        .status(404)
+        .status(401)
         .json(
-          new apiError(false, 402, null, `unathorize access: ${error}`, true)
+          new apiError(
+            false,
+            401,
+            null,
+            "Unauthorized access: No token provided",
+            true
+          )
         );
     }
   } catch (error) {
     console.log("error from authguard", error);
+    return res
+      .status(401)
+      .json(
+        new apiError(
+          false,
+          401,
+          null,
+          `Unauthorized access: ${error.message}`,
+          true
+        )
+      );
   }
 };
 

@@ -143,7 +143,7 @@ const GetCartItemUser = async (req, res) => {
 const incrementCartitem = async (req, res) => {
   try {
     const { cartid } = req.params;
-    const cartItem = await CartModel.findById(cartid);
+    const cartItem = await CartModel.findOne({ product: cartid });
     cartItem.quantity += 1;
     await cartItem.save();
     return res
@@ -165,9 +165,9 @@ const incrementCartitem = async (req, res) => {
 
 const decrementCartitem = async (req, res) => {
   try {
-    const { cartid } = req.params; // Get cart ID from URL
+    const { cartid } = req.params;
     // 1. Find the specific cart item
-    const cartItem = await CartModel.findById(cartid);
+    const cartItem = await CartModel.findOne({ product: cartid });
     if (!cartItem) {
       return res
         .status(400)
@@ -265,14 +265,22 @@ const userCart = async (req, res) => {
 
 const removeCartItem = async (req, res) => {
   try {
+    const user = req.user;
     const { cartid } = req.query;
     // 1. Find the specific cart item
-    const cartItem = await CartModel.findByIdAndDelete(cartid);
+    const cartItem =
+      await CartModel.findByIdAndDelete(cartid).populate("product");
     if (!cartItem) {
       return res
         .status(400)
         .json(new apiError(false, 400, null, `this CartItem not found`, true));
     }
+    // remove it from user DB hidely
+    const removeFromUserDB = await UserMolel.findByIdAndUpdate(
+      { _id: user.userId },
+      { $pull: { cartitem: cartid } },
+      { new: true }
+    ).select("cartitem");
 
     return res
       .status(201)

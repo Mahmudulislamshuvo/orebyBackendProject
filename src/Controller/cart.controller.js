@@ -32,6 +32,8 @@ const AddtoCart = async (req, res) => {
     });
 
     if (isAlreadyInCart) {
+      isAlreadyInCart.quantity += 1;
+      await isAlreadyInCart.save();
       return res
         .status(400)
         .json(
@@ -39,7 +41,7 @@ const AddtoCart = async (req, res) => {
             false,
             400,
             null,
-            `This product is already in the cart`,
+            `This product is already in the cart Quantity +1`,
             true
           )
         );
@@ -173,18 +175,27 @@ const decrementCartitem = async (req, res) => {
         .status(400)
         .json(new apiError(false, 400, null, `this CartItem not found`, true));
     }
-    cartItem.quantity -= 1;
-    cartItem.save();
-    return res
-      .status(201)
-      .json(
-        new apiResponse(
-          true,
-          cartItem,
-          `Quantuty decrement 1 succesfull`,
-          false
-        )
-      );
+    if (cartItem.quantity > 1) {
+      cartItem.quantity -= 1;
+      await cartItem.save();
+      return res
+        .status(201)
+        .json(
+          new apiResponse(
+            true,
+            cartItem,
+            `Quantity decreased successfully`,
+            false
+          )
+        );
+    } else {
+      // If quantity is 1, don't allow decrement
+      return res
+        .status(400)
+        .json(
+          new apiError(400, `Cannot decrease the quantity below 1`, null, true)
+        );
+    }
   } catch (error) {
     return res
       .status(500)

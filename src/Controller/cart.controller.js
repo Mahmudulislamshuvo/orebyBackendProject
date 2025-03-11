@@ -35,11 +35,11 @@ const AddtoCart = async (req, res) => {
       isAlreadyInCart.quantity += 1;
       await isAlreadyInCart.save();
       return res
-        .status(400)
+        .status(200)
         .json(
           new apiError(
             false,
-            400,
+            200,
             null,
             `This product is already in the cart Quantity +1`,
             true

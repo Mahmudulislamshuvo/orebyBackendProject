@@ -13,9 +13,10 @@ const is_live = process.env.ISLIVE == false;
 const placeOrder = async (req, res) => {
   try {
     // Split Bearer token from header
-    const token = req.headers.authorization.replace("Bearer", "").trim();
+    // const token = req.headers.authorization.replace("Bearer", "").trim();
 
-    const { userId } = req.user;
+    const { userId, token } = req.user;
+
     const { customerinfo, paymentinfo } = req.body;
     const { address1, city, division, postCode } = customerinfo;
     const { paymentMethod } = paymentinfo;
@@ -45,6 +46,7 @@ const placeOrder = async (req, res) => {
         "Content-Type": "application/json",
       },
     });
+
     if (!response.ok) {
       return res
         .status(404)
@@ -139,7 +141,7 @@ const placeOrder = async (req, res) => {
         customerinfo: customerinfo,
         paymentinfo,
         subtotal: totalAmount,
-        totalitem: totalQuantity,
+        totalitem: totalCartItem,
       }).save();
 
       await new InvoiceModel({

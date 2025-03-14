@@ -40,7 +40,9 @@ const createBanner = async (req, res) => {
     myCache.del("allbanner");
     return res
       .status(201)
-      .json(new apiResponse(saveBanner, `Banner created succusfully`));
+      .json(
+        new apiResponse(true, saveBanner, `Banner created succusfully`, false)
+      );
   } catch (error) {
     return res
       .status(501)
@@ -59,7 +61,14 @@ const getallBanner = async (req, res) => {
       if (allbanner) {
         return res
           .status(201)
-          .json(new apiResponse(allbanner, `All Banner retrive succusfully`));
+          .json(
+            new apiResponse(
+              true,
+              allbanner,
+              `All Banner retrive succusfully`,
+              false
+            )
+          );
       }
       return res
         .status(504)

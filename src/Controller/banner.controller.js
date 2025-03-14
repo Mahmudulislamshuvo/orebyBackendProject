@@ -72,8 +72,10 @@ const getallBanner = async (req, res) => {
         .status(201)
         .json(
           new apiResponse(
+            true,
             parsedCacheData,
-            `All Banner retrive succusfully from cache`
+            `All Banner retrive succusfully from cache`,
+            false
           )
         );
     }

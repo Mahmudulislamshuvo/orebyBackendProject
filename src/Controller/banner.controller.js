@@ -131,6 +131,7 @@ const deleteBanner = async (req, res) => {
         .status(404)
         .json(new apiError(404, null, `single banner not found for Delete`));
     }
+    myCache.del("allbanner");
     return res
       .status(201)
       .json(new apiResponse(deletedItem, `Single Banner Deleted succusfully`));
@@ -143,6 +144,63 @@ const deleteBanner = async (req, res) => {
   }
 };
 
+// const updateBanner = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const searchItem = await bannerModel.findById(id);
+//     if (!searchItem) {
+//       return res
+//         .status(404)
+//         .json(new apiError(404, null, `banner not found for update`));
+//     }
+//     const image = req.files?.image;
+
+//     const updateObj = {};
+//     if (image) {
+//       const oldCloudinaryImage = searchItem.image.split("/");
+
+//       const DeleteUrl =
+//         oldCloudinaryImage[oldCloudinaryImage?.length - 1].split(".")[0];
+//       const updateObj = await deleteCloudinaryFile(DeleteUrl);
+//       if (!updateObj?.deleted) {
+//         return res
+//           .status(404)
+//           .json(new apiError(404, null, `Delete file not found`));
+//       }
+
+//       const { secure_url } = await uploadCloudinaryFile(image[0].path);
+//       console.log("secure_url", secure_url);
+//       updateObj.image = secure_url;
+//     }
+
+//     if (req.body.name) {
+//       updateObj.name = req.body.name;
+//     }
+
+//     const UpdatedBanner = await bannerModel.findByIdAndUpdate(
+//       { _id: id },
+//       { ...updateObj },
+//       { new: true }
+//     );
+
+//     myCache.del("allbanner");
+//     if (UpdatedBanner) {
+//       return res
+//         .status(201)
+//         .json(new apiResponse(UpdatedBanner, `Banner updated successfully`));
+//     }
+//     return res
+//       .status(404)
+//       .json(new apiError(404, null, `unable to delete try again`));
+//   } catch (error) {
+//     return res
+//       .status(501)
+//       .json(
+//         new apiError(501, null, `Error from update banner controller: ${error}`)
+//       );
+//   }
+// };
+
 const updateBanner = async (req, res) => {
   try {
     const { id } = req.params;
@@ -152,38 +210,47 @@ const updateBanner = async (req, res) => {
         .status(404)
         .json(new apiError(404, null, `banner not found for update`));
     }
+
     const image = req.files?.image;
-    const updateObj = {};
+    const updateObj = {}; // Declare updateObj once
+
     if (image) {
-      const oldCloudinaryImage = searchItem.image.split("/");
+      const oldCloudinaryImage = searchItem.image.split("/"); // Splitting old image URL
       const DeleteUrl =
-        oldCloudinaryImage[oldCloudinaryImage?.length - 1].split(".")[0];
-      const updateObj = await deleteCloudinaryFile(DeleteUrl);
-      if (!updateObj?.deleted) {
+        oldCloudinaryImage[oldCloudinaryImage?.length - 1].split(".")[0]; // Extract Cloudinary public ID
+      const deleteResult = await deleteCloudinaryFile(DeleteUrl); // Delete from Cloudinary
+
+      if (!deleteResult?.deleted) {
         return res
           .status(404)
           .json(new apiError(404, null, `Delete file not found`));
       }
-      const { secure_url } = await uploadCloudinaryFile(image[0].path);
-      updateObj.image = secure_url;
+
+      const { secure_url } = await uploadCloudinaryFile(image[0].path); // Upload new image
+      console.log("secure_url", secure_url);
+      updateObj.image = secure_url; // Set image URL in updateObj
     }
+
     if (req.body.name) {
-      updateObj.name = req.body.name;
+      updateObj.name = req.body.name; // Set name in updateObj if available
     }
+
     const UpdatedBanner = await bannerModel.findByIdAndUpdate(
       { _id: id },
       { ...updateObj },
       { new: true }
     );
-    myCache.del("allbanner");
+
+    myCache.del("allbanner"); // Clear cache
     if (UpdatedBanner) {
       return res
         .status(201)
         .json(new apiResponse(UpdatedBanner, `Banner updated successfully`));
     }
+
     return res
       .status(404)
-      .json(new apiError(404, null, `unable to delete try again`));
+      .json(new apiError(404, null, `Unable to update. Please try again.`));
   } catch (error) {
     return res
       .status(501)

@@ -212,13 +212,13 @@ const updateBanner = async (req, res) => {
     }
 
     const image = req.files?.image;
-    const updateObj = {}; // Declare updateObj once
+    const updateObj = {};
 
     if (image) {
-      const oldCloudinaryImage = searchItem.image.split("/"); // Splitting old image URL
+      const oldCloudinaryImage = searchItem.image.split("/");
       const DeleteUrl =
-        oldCloudinaryImage[oldCloudinaryImage?.length - 1].split(".")[0]; // Extract Cloudinary public ID
-      const deleteResult = await deleteCloudinaryFile(DeleteUrl); // Delete from Cloudinary
+        oldCloudinaryImage[oldCloudinaryImage?.length - 1].split(".")[0];
+      const deleteResult = await deleteCloudinaryFile(DeleteUrl);
 
       if (!deleteResult?.deleted) {
         return res
@@ -241,7 +241,7 @@ const updateBanner = async (req, res) => {
       { new: true }
     );
 
-    myCache.del("allbanner"); // Clear cache
+    myCache.del("allbanner");
     if (UpdatedBanner) {
       return res
         .status(201)

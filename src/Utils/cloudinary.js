@@ -24,12 +24,13 @@ const uploadCloudinaryFile = async (localFilePath) => {
 
 const deleteCloudinaryFile = async (filepath) => {
   try {
-    const deleteItem = cloudinary.api.delete_resources([filepath], {
+    const deleteItem = await cloudinary.api.delete_resources([filepath], {
       type: "upload",
     });
     return deleteItem;
   } catch (error) {
-    console.log("error from deleteCloudinaryFile");
+    console.log("Error from deleteCloudinaryFile:", error);
+    return null;
   }
 };
 

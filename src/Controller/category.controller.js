@@ -119,6 +119,39 @@ const singlgCategory = async (req, res) => {
 const updateCategory = async (req, res) => {
   try {
     const { id } = req.params;
+    const searchItem = await categoryModel.findById(id);
+    if (!searchItem) {
+      return res
+        .status(404)
+        .json(new apiError(404, null, `Category not found for update`));
+    }
+    // Image
+    const image = req.files?.image;
+    const updateObj = {};
+
+    if (image) {
+      const oldCloudinaryImage = searchItem.image.split("/");
+      const DeleteUrl =
+        oldCloudinaryImage[oldCloudinaryImage?.length - 1].split(".")[0];
+      const deleteResult = await deleteCloudinaryFile(DeleteUrl);
+
+      if (!deleteResult?.deleted) {
+        return res
+          .status(404)
+          .json(new apiError(404, null, `Delete file not found`));
+      }
+      const { secure_url } = await uploadCloudinaryFile(image[0].path); // Upload new image
+      updateObj.image = secure_url;
+    }
+    // setting to updateObj for updating description
+    if (req.body.description) {
+      updateObj.description = req.body.description;
+    }
+    // setting to updateObj for updating name
+    if (req.body.name) {
+      updateObj.name = req.body.name;
+    }
+    // updating database
     const updatedCategory = await categoryModel.findOneAndUpdate(
       { _id: id },
       { ...req.body },

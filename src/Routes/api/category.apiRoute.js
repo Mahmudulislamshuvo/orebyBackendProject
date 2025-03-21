@@ -11,6 +11,8 @@ const { upload } = require("../../middleware/multer.middleware.js");
 _.route("/category")
   .post(upload.fields([{ name: "image", maxCount: 5 }]), createCategory)
   .get(Allcategory);
-_.route("/category/:id").get(singlgCategory).patch(updateCategory);
+_.route("/category/:id")
+  .get(singlgCategory)
+  .put(upload.fields([{ name: "image", maxCount: 1 }]), updateCategory);
 
 module.exports = _;

@@ -35,7 +35,10 @@ const createCategory = async (req, res) => {
     if (saveCategory) {
       return res
         .status(201)
-        .json(new apiResponse(saveCategory, `${name} saved on Category list`));
+        .json(
+          new apiResponse(true, saveCategory, `${name} saved on Category list`),
+          false
+        );
     }
     return res
       .status(501)
@@ -154,13 +157,20 @@ const updateCategory = async (req, res) => {
     // updating database
     const updatedCategory = await categoryModel.findOneAndUpdate(
       { _id: id },
-      { ...req.body },
+      { ...updateObj },
       { new: true }
     );
     if (updatedCategory) {
       return res
         .status(201)
-        .json(new apiResponse(updatedCategory, `Category Update seccussful`));
+        .json(
+          new apiResponse(
+            true,
+            updatedCategory,
+            `Category Update seccussful`,
+            false
+          )
+        );
     }
   } catch (error) {
     return res

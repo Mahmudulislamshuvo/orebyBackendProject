@@ -185,9 +185,83 @@ const updateCategory = async (req, res) => {
   }
 };
 
+const deleteCategory = async (req, res) => {
+  try {
+    const { id } = req.params; // Get the category ID from URL params
+
+    if (!id) {
+      return res
+        .status(400)
+        .json(new apiError(false, 400, null, "Category ID is missing!", true));
+    }
+
+    // Find the category by ID
+    const category = await categoryModel.findById(id);
+    if (!category) {
+      return res
+        .status(404)
+        .json(new apiError(false, 404, null, "Category not found!", true));
+    }
+
+    // Optionally, delete the category image from Cloudinary if needed
+    // For example, if your category.image holds a URL, you could extract the public_id and delete it:
+    const oldCloudinaryImage = category.image.split("/");
+    const publicId =
+      oldCloudinaryImage[oldCloudinaryImage.length - 1].split(".")[0];
+    const deleteResult = await deleteCloudinaryFile(publicId);
+    if (!deleteResult?.deleted) {
+      return res
+        .status(500)
+        .json(
+          new apiError(
+            false,
+            500,
+            null,
+            "Failed to delete image from Cloudinary",
+            true
+          )
+        );
+    }
+
+    // Delete the category from the database
+    const deletedCategory = await categoryModel.findByIdAndDelete(id);
+    if (deletedCategory) {
+      return res
+        .status(200)
+        .json(
+          new apiResponse(
+            true,
+            deletedCategory,
+            "Category deleted successfully",
+            false
+          )
+        );
+    } else {
+      return res
+        .status(501)
+        .json(
+          new apiError(false, 501, null, "Failed to delete category", true)
+        );
+    }
+  } catch (error) {
+    return res
+      .status(501)
+      .json(
+        new apiError(
+          false,
+          501,
+          null,
+          `Error from delete category controller: ${error}`,
+          true
+        )
+      );
+  }
+};
+
 module.exports = {
   createCategory,
   Allcategory,
   singlgCategory,
   updateCategory,
+  deleteCategory,
 };

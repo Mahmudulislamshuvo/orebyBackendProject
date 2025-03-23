@@ -5,6 +5,7 @@ const {
   Allcategory,
   singlgCategory,
   updateCategory,
+  deleteCategory,
 } = require("../../Controller/category.controller.js");
 const { upload } = require("../../middleware/multer.middleware.js");
 
@@ -13,6 +14,7 @@ _.route("/category")
   .get(Allcategory);
 _.route("/category/:id")
   .get(singlgCategory)
-  .put(upload.fields([{ name: "image", maxCount: 1 }]), updateCategory);
+  .put(upload.fields([{ name: "image", maxCount: 1 }]), updateCategory)
+  .delete(deleteCategory);
 
 module.exports = _;

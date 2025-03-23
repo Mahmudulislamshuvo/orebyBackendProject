@@ -43,7 +43,12 @@ const subCategory = async (req, res) => {
       return res
         .status(201)
         .json(
-          new apiResponse(saveSubCategory, `subCategory saved successfully`)
+          new apiResponse(
+            true,
+            saveSubCategory,
+            `subCategory saved successfully`,
+            false
+          )
         );
     }
     return res
@@ -68,8 +73,10 @@ const getAllsubCategory = async (req, res) => {
         .status(201)
         .json(
           new apiResponse(
+            true,
             allSubCategory,
-            `All subCategory retrive successfully`
+            `All subCategory retrive successfully`,
+            false
           )
         );
     }
@@ -97,8 +104,10 @@ const SingleSubCategory = async (req, res) => {
         .status(201)
         .json(
           new apiResponse(
+            true,
             singleSubCategory,
-            `Single subCategory retrive successfully`
+            `Single subCategory retrive successfully`,
+            false
           )
         );
     }
@@ -129,8 +138,10 @@ const DeteleSingleSubCategory = async (req, res) => {
         .status(201)
         .json(
           new apiResponse(
+            true,
             deletedItem,
-            `Single subCategory ${deletedItem.name} deleted successfully`
+            `Single subCategory ${deletedItem.name} deleted successfully`,
+            false
           )
         );
     }
@@ -165,8 +176,10 @@ const updateSubCategory = async (req, res) => {
         .status(201)
         .json(
           new apiResponse(
+            true,
             updatedSubcategory,
-            `subCategory updated successfully`
+            `subCategory updated successfully`,
+            false
           )
         );
     }

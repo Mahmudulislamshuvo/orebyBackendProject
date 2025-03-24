@@ -12,6 +12,6 @@ _.route("/subcategory").post(subCategory).get(getAllsubCategory);
 _.route("/subcategory/:id")
   .get(SingleSubCategory)
   .delete(DeteleSingleSubCategory)
-  .patch(updateSubCategory);
+  .put(updateSubCategory);
 
 module.exports = _;

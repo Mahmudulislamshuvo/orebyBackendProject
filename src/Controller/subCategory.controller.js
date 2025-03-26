@@ -5,6 +5,15 @@ const CategoryModel = require("../Model/category.model");
 
 const subCategory = async (req, res) => {
   try {
+    const { name, description, category } = req.body;
+    if (!name || !description || !category) {
+      return res
+        .status(401)
+        .json(
+          new apiError(false, 401, null, `Name/Description, Category missing`),
+          true
+        );
+    }
     for (let key in req.body) {
       if (!req.body[key]) {
         return res
@@ -14,6 +23,7 @@ const subCategory = async (req, res) => {
           );
       }
     }
+
     const alreadyExistsubCategory = await subCategoryModel.find({
       name: req.body.name,
     });

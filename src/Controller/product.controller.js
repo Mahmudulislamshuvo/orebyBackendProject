@@ -60,7 +60,7 @@ const createProduct = async (req, res) => {
       image: allUploadImg,
       category,
       subCategory,
-      review,
+      review: review.split(","),
       stock,
       rating,
       discount,

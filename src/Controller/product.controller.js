@@ -175,52 +175,97 @@ const getAllproducts = async (req, res) => {
 // update product name or details
 const updateProduct = async (req, res) => {
   try {
-    // update product=========
     const { productId } = req.params;
-    const IsExistProduct = await productModel.findById(productId);
-    if (!IsExistProduct) {
+    const product = await productModel.findById(productId);
+
+    if (!product) {
       return res
         .status(404)
-        .json(new apiError(404, null, `product not found!!`));
+        .json(new apiError(false, 404, null, "Product not found", true));
     }
-    // update img===
-    let delete_resourcesCloudinary = null;
-    let allUploadImg = [];
-    if (req.files?.image) {
-      for (image of IsExistProduct.image) {
-        const splitImageAdress = image.split("/");
-        const cloudinaryFilePath =
-          splitImageAdress[splitImageAdress.length - 1].split(".")[0];
-        delete_resourcesCloudinary =
-          await deleteCloudinaryFile(cloudinaryFilePath);
-      }
 
-      if (delete_resourcesCloudinary) {
-        for (let image of req.files?.image) {
-          let UploadedFile = await uploadCloudinaryFile(image?.path);
-          allUploadImg.push(UploadedFile.secure_url);
-        }
-        const updatedProduct = await productModel.findByIdAndUpdate(
-          {
-            _id: productId,
-          },
-          { ...req.body },
-          { new: true }
+    const updates = req.body;
+    let imagesToDelete = [];
+    let newImages = [];
+
+    // Handle image update
+    if (req.files?.image?.length) {
+      try {
+        imagesToDelete = [...product.image];
+
+        // Upload new images
+        newImages = await Promise.all(
+          req.files.image.map(async (file) => {
+            const result = await uploadCloudinaryFile(file.path);
+            return result.secure_url;
+          })
         );
+
+        updates.image = newImages;
+      } catch (uploadError) {
         return res
-          .status(201)
-          .json(new apiResponse(updatedProduct, `updated Product succusfully`));
+          .status(500)
+          .json(
+            new apiError(
+              false,
+              500,
+              null,
+              `Image upload failed: ${uploadError.message}`,
+              true
+            )
+          );
       }
     }
+
+    // Prepare update fields
+    const updatedFields = {
+      ...updates,
+      ...(newImages.length && { image: newImages }),
+    };
+
+    // Check for empty updates
+    if (Object.keys(updatedFields).length === 0) {
+      return res
+        .status(400)
+        .json(new apiError(false, 400, null, "No changes provided", true));
+    }
+
+    // Update product in database
+    const updatedProduct = await productModel.findByIdAndUpdate(
+      productId,
+      updatedFields,
+      { new: true, runValidators: true }
+    );
+
+    // Cleanup old images after successful update
+    if (imagesToDelete.length > 0) {
+      try {
+        await Promise.all(
+          imagesToDelete.map(async (imageUrl) => {
+            const publicId = imageUrl.split("/").pop().split(".")[0];
+            await deleteCloudinaryFile(publicId);
+          })
+        );
+      } catch (deleteError) {
+        console.error("Old image cleanup failed:", deleteError);
+      }
+    }
+
+    return res
+      .status(201)
+      .json(
+        new apiResponse(
+          true,
+          updatedProduct,
+          "Product updated successfully",
+          false
+        )
+      );
   } catch (error) {
     return res
-      .status(501)
+      .status(500)
       .json(
-        new apiError(
-          501,
-          null,
-          `update product failed!! Error from updateProduct controller: ${error}`
-        )
+        new apiError(false, 500, null, `Update failed: ${error.message}`, true)
       );
   }
 };
@@ -267,6 +312,7 @@ const deleteSingleProduct = async (req, res) => {
     const deletedItem = await productModel.findByIdAndDelete({
       _id: productId,
     });
+    myCache.del("allproduct");
     if (deletedItem) {
       return res
         .status(201)

@@ -220,4 +220,39 @@ const placeOrder = async (req, res) => {
   }
 };
 
-module.exports = { placeOrder };
+const GetAllorders = async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const orders = await orderModel
+      .find({ user: userId })
+      .populate("cartItem")
+      .populate("user")
+      .populate("customerinfo")
+      .populate("paymentinfo")
+      .sort({ createdAt: -1 });
+    if (!orders) {
+      return res
+        .status(404)
+        .json(new apiError(false, 404, null, `No Orders Found`, true));
+    }
+    return res
+      .status(200)
+      .json(
+        new apiResponse(true, orders, `Orders fetched successfully`, false)
+      );
+  } catch (error) {
+    return res
+      .status(505)
+      .json(
+        new apiError(
+          false,
+          505,
+          null,
+          `Error from GetAllorders controller: ${error}`,
+          true
+        )
+      );
+  }
+};
+
+module.exports = { placeOrder, GetAllorders };

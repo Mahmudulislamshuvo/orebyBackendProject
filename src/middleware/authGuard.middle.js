@@ -53,6 +53,8 @@ const authGuard = async (req, res, next) => {
   }
 };
 
+module.exports = { authGuard };
+
 // todo: Using const here
 // const authGuard = async (req, res, next) => {
 //   try {
@@ -105,5 +107,3 @@ const authGuard = async (req, res, next) => {
 //     });
 //   }
 // };
-
-module.exports = { authGuard };

@@ -241,7 +241,7 @@ const userCart = async (req, res) => {
       user: userId,
     })
       .populate({ path: "user", select: "-Otp -recoveryEmail -password" })
-      .populate("product");
+      .populate({ path: "product" });
 
     // reduce result, this is new for me
     const TotalpriceOfCart = cartItems.reduce(

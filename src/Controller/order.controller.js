@@ -5,6 +5,8 @@ const userModel = require("../Model/user.model");
 const InvoiceModel = require("../Model/invoice.model");
 const SSLCommerzPayment = require("sslcommerz-lts");
 const crypto = require("crypto");
+const cartModel = require("../Model/cart.model");
+const { mongoose } = require("mongoose");
 
 const store_id = process.env.STORE_ID;
 const store_passwd = process.env.STORE_PASSWORD;
@@ -12,12 +14,12 @@ const is_live = process.env.ISLIVE == false;
 
 const placeOrder = async (req, res) => {
   try {
-    // Split Bearer token from header
+    // // Split Bearer token from header
     // const token = req.headers.authorization.replace("Bearer", "").trim();
 
     const { userId, token } = req.user;
-
     const { customerinfo, paymentinfo } = req.body;
+
     const { address1, city, division, postCode } = customerinfo;
     const { paymentMethod } = paymentinfo;
 
@@ -63,6 +65,15 @@ const placeOrder = async (req, res) => {
     const data = await response.json();
     const { totalAmount, totalCartItem } = data?.data;
 
+    const productInfo = data?.data?.cartItems?.reduce(
+      (initialValue, item) => {
+        initialValue.cart.push(item._id);
+        initialValue.product.push(item.product._id);
+        return initialValue;
+      },
+      { cart: [], product: [] }
+    );
+
     // Create a transaction id
     const transsection_id = crypto.randomUUID().split("-")[0];
 
@@ -71,7 +82,7 @@ const placeOrder = async (req, res) => {
       // Save the order as processing
       const saveOrder = await new orderModel({
         user: userId,
-        cartItem: user.cartitem,
+        cartItem: productInfo.product,
         customerinfo: customerinfo,
         paymentinfo,
         subtotal: totalAmount,
@@ -80,12 +91,21 @@ const placeOrder = async (req, res) => {
 
       // Saving Invoice
       const invoice = await new InvoiceModel({
-        tranId: transsection_id,
+        tranId: `COD-${transsection_id}`,
         subtotal: totalAmount,
         user: userId,
         customerDetails: customerinfo,
         order: saveOrder._id,
       }).save();
+
+      const cartIds = productInfo.cart.map(
+        (id) => new mongoose.Types.ObjectId(id)
+      );
+      await cartModel.deleteMany({ _id: { $in: cartIds } });
+
+      await userModel.findByIdAndUpdate(userId, {
+        $set: { cartitem: [] },
+      });
 
       return res
         .status(201)
@@ -103,7 +123,7 @@ const placeOrder = async (req, res) => {
       const sslData = {
         total_amount: totalAmount,
         currency: "BDT",
-        tran_id: transsection_id, // unique tran_id for each API call
+        tran_id: transsection_id,
         success_url: `http://localhost:3000/api/v1/success/${transsection_id}`,
         fail_url: `http://localhost:3000/api/v1/failed/${transsection_id}`,
         cancel_url: `http://localhost:3000/api/v1/cancel/${transsection_id}`,
@@ -137,7 +157,7 @@ const placeOrder = async (req, res) => {
       // Save order and invoice first
       const saveOrder = await new orderModel({
         user: userId,
-        cartItem: user.cartitem,
+        cartItem: productInfo.product,
         customerinfo: customerinfo,
         paymentinfo,
         subtotal: totalAmount,
@@ -167,7 +187,6 @@ const placeOrder = async (req, res) => {
             )
           );
       }
-      console.log(sslApiResponse?.GatewayPageURL);
 
       // Return the SSLCommerz payment link or API response data
       return res

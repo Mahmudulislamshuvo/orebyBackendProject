@@ -86,6 +86,12 @@ const UserModel = new Schema(
     otpExpire: {
       type: Number,
     },
+    // orderedItems: [
+    //   {
+    //     type: Schema.Types.ObjectId,
+    //     ref: "product",
+    //   },
+    // ],
   },
 
   {

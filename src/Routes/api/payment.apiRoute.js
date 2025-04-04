@@ -6,7 +6,7 @@ const {
 const { authGuard } = require("../../middleware/authGuard.middle");
 const _ = express.Router();
 
-_.route("/success/:id").post(authGuard, successPayment);
-_.route("/failed/:id").post(authGuard, failedPayment);
+_.route("/success/:id").post(successPayment);
+_.route("/failed/:id").post(failedPayment);
 
 module.exports = _;

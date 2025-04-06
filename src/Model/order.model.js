@@ -1,66 +1,71 @@
 const mongoose = require("mongoose");
 const { Schema, Types, model } = mongoose;
 
-const orderSchema = new Schema({
-  user: {
-    type: Types.ObjectId,
-    ref: "user",
-  },
-  cartItem: [
-    {
+const orderSchema = new Schema(
+  {
+    user: {
       type: Types.ObjectId,
-      ref: "cart",
+      ref: "user",
     },
-  ],
-  customerinfo: {
-    address1: {
+    cartItem: [
+      {
+        type: Types.ObjectId,
+        ref: "product",
+      },
+    ],
+    customerinfo: {
+      address1: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+      address2: {
+        type: String,
+        trim: true,
+      },
+      city: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+      division: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+      postCode: {
+        type: Number,
+        required: true,
+        trim: true,
+      },
+    },
+    paymentinfo: {
+      paymentMethod: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+      isPaid: {
+        type: Boolean,
+        default: false,
+      },
+    },
+    orderStatus: {
       type: String,
-      required: true,
       trim: true,
+      default: "pending",
+      enum: ["pending", "cancel", "processing", "deliverd"],
     },
-    address2: {
-      type: String,
-      trim: true,
-    },
-    city: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    division: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    postCode: {
+    subtotal: {
       type: Number,
-      required: true,
-      trim: true,
+    },
+    totalitem: {
+      type: Number,
     },
   },
-  paymentinfo: {
-    paymentMethod: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    isPaid: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  orderStatus: {
-    type: String,
-    trim: true,
-    default: "pending",
-    enum: ["pending", "cancel", "processing", "deliverd"],
-  },
-  subtotal: {
-    type: Number,
-  },
-  totalitem: {
-    type: Number,
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 
 module.exports = model("order", orderSchema);

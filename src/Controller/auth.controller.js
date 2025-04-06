@@ -10,7 +10,6 @@ const { makeJWTToken } = require("../Helper/jwtToken.js");
 const Registration = async (req, res) => {
   try {
     const { firstName, email, mobile, password } = req.body;
-
     // Check required fields
     if (!firstName || !email || !mobile || !password) {
       return res

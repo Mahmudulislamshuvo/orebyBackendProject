@@ -54,7 +54,7 @@ const orderSchema = new Schema(
       type: String,
       trim: true,
       default: "pending",
-      enum: ["pending", "cancel", "processing", "deliverd"],
+      enum: ["pending", "cancel", "processing", "delivered"],
     },
     subtotal: {
       type: Number,

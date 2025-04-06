@@ -302,4 +302,48 @@ const SingleOrder = async (req, res) => {
   }
 };
 
-module.exports = { placeOrder, GetAllorders, SingleOrder };
+const updateOrderStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { orderStatus } = req.body;
+
+    // Validate if the status is provided
+    if (!orderStatus) {
+      return res
+        .status(400)
+        .json(new apiError(false, 400, null, `Order status is required`, true));
+    }
+
+    // Find the order by ID
+    const order = await orderModel.findById(id);
+    if (!order) {
+      return res
+        .status(404)
+        .json(new apiError(false, 404, null, `Order not found`, true));
+    }
+
+    // Update the order status
+    order.orderStatus = orderStatus;
+    await order.save();
+
+    return res
+      .status(200)
+      .json(
+        new apiResponse(true, order, `Order status updated successfully`, false)
+      );
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        new apiError(
+          false,
+          500,
+          null,
+          `Error from updateOrderStatus controller: ${error.message}`,
+          true
+        )
+      );
+  }
+};
+
+module.exports = { placeOrder, GetAllorders, SingleOrder, updateOrderStatus };

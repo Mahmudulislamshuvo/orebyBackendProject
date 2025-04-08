@@ -26,7 +26,7 @@ const invoiceSchema = new Schema(
     },
     deliveryStatus: {
       type: String,
-      enum: ["pending", "delivered", "canceled"],
+      enum: ["pending", "cancel", "processing", "delivered"],
       default: "pending",
     },
     paymentStatus: {

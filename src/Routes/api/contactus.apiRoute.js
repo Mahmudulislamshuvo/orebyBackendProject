@@ -1,7 +1,10 @@
 const express = require("express");
-const { createContactUs } = require("../../Controller/contactus.controller");
+const {
+  createContactUs,
+  getAllContactUsEmails,
+} = require("../../Controller/contactus.controller");
 const _ = express.Router();
 
-_.route("/contact").post(createContactUs);
+_.route("/contact").post(createContactUs).get(getAllContactUsEmails);
 
 module.exports = _;

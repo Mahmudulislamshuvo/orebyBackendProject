@@ -47,12 +47,50 @@ const createContactUs = async (req, res) => {
       .status(501)
       .json(
         new apiError(
+          false,
           501,
           null,
-          `Error from create ContactUs controller: ${error}`
+          `Error from create ContactUs controller: ${error}`,
+          true
         )
       );
   }
 };
 
-module.exports = { createContactUs };
+const getAllContactUsEmails = async (req, res) => {
+  try {
+    const allContactUsMessages = await contactUsModel.find();
+    if (allContactUsMessages.length === 0) {
+      return res
+        .status(404)
+        .json(
+          new apiError(false, 404, null, "No Contact Us messages found!", true)
+        );
+    }
+    // If messages exist, return the messages in the response
+    return res
+      .status(200)
+      .json(
+        new apiResponse(
+          true,
+          allContactUsMessages,
+          "All Contact Us messages retrieved successfully",
+          false
+        )
+      );
+  } catch (error) {
+    return res
+      .status(501)
+      .json(
+        new apiError(
+          false,
+          501,
+          null,
+          `Error from getAllContactUsEmails controller: ${error}`,
+          true
+        )
+      );
+  }
+};
+
+module.exports = { createContactUs, getAllContactUsEmails };

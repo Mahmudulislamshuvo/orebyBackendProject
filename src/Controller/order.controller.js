@@ -326,10 +326,25 @@ const updateOrderStatus = async (req, res) => {
     order.orderStatus = orderStatus;
     await order.save();
 
+    // updating Invoice status also
+    const Invoice = await InvoiceModel.findOne({ order: id });
+    // if (!Invoice) {
+    //   return res
+    //     .status(404)
+    //     .json(new apiError(false, 404, null, `Invoice not found`, true));
+    // }
+    Invoice.deliveryStatus = orderStatus;
+    await Invoice.save();
+
     return res
       .status(200)
       .json(
-        new apiResponse(true, order, `Order status updated successfully`, false)
+        new apiResponse(
+          true,
+          order,
+          `Order/invoice status updated successfully`,
+          false
+        )
       );
   } catch (error) {
     return res
@@ -339,7 +354,7 @@ const updateOrderStatus = async (req, res) => {
           false,
           500,
           null,
-          `Error from updateOrderStatus controller: ${error.message}`,
+          `Error from updateOrderStatus controller: ${error}`,
           true
         )
       );

@@ -29,13 +29,22 @@ const authGuard = async (req, res, next) => {
 
     const decoded = await jwt.verify(token, process.env.TOKEN_SECRET);
 
+    console.log(decoded);
+
     // If decoded successfully, set user info in req.user
     if (decoded) {
-      req.user = {
-        userId: decoded.id,
-        useremail: decoded.email,
-        token: token,
-      };
+      if (decoded?.email) {
+        req.user = {
+          userId: decoded.id,
+          useremail: decoded.email,
+          token: token,
+        };
+      } else {
+        req.user = {
+          userId: decoded.id,
+          token: token,
+        };
+      }
       return next();
     } else {
       return res

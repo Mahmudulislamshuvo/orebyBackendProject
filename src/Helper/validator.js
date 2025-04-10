@@ -17,4 +17,30 @@ const bdNumberChecker = (number) => {
   return bdNumberChecker;
 };
 
-module.exports = { Mailchecker, PasswordChecker, bdNumberChecker };
+const UsernameChecker = (username) => {
+  const usernameRegex = /^(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]{3,20}(?<![_.])$/;
+  return usernameRegex.test(username);
+
+  //  * ✅ Valid usernames:
+  //  * - 3 to 20 characters long
+  //  * - Can contain letters (a–z, A–Z), numbers (0–9), dots (.), and underscores (_)
+  //  * - Cannot start or end with a dot or underscore
+  //  * - Cannot have two dots or two underscores in a row (e.g., "__" or "..")
+  //  *
+  //  * ❌ Invalid usernames:
+  //  * - Starts or ends with a dot or underscore
+  //  *   e.g., ".user", "_user", "user_", "user."
+  //  * - Less than 3 or more than 20 characters
+  //  *   e.g., "ab", "thisusernameiswaytoolong123"
+  //  * - Contains consecutive special characters
+  //  *   e.g., "user__name", "user..name", "user._name"
+  //  * - Contains invalid characters
+  //  *   e.g., "user@name", "hello world"
+};
+
+module.exports = {
+  Mailchecker,
+  PasswordChecker,
+  bdNumberChecker,
+  UsernameChecker,
+};
